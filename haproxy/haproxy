@@ -1,0 +1,36 @@
+"set up
+
+cd haproxy
+uname -r
+make TARGET=linux26 ARCH=x86_64 USER_EPOLL=1 USE_STATIC_PCRE=1
+make TARGET=linux2628 ARCH=i386 
+make PREFIX=/application/haproxy1.4.24 install
+
+''ip_forward
+vim /etc/sysctl.conf net.ipv4.ip_forward = 1
+ln -s /application/haproxy1.4.24 /application/haproxy
+
+mkdir -p bin conf var/run var/chroot
+
+global
+    chroot /application/haproxy-1.4.24/var/chroot
+    deamon
+
+    group haproxy
+    user haproxy
+
+    log 127.0.0.1:514 local0 info
+    
+    pid /application/haproxy/var/run/haproxy.pid
+    maxconn 20480
+    spread-check 3
+    tune.maxaccept 100
+    tune.maxpollevents 180
+    nbproc 8
+defaults
+    log global
+
+
+    
+
+ 
