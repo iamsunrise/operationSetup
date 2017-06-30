@@ -1,0 +1,42 @@
+ /etc/init.d/NetworkManager stop
+ /etc/init.d/iptables stop
+ sed -i 's/SELINUX=.*/SELINUX=disabled/g' /etc/selinux/config
+ ssh-keygen
+for i in {7..9}; do ssh-copy-id -i 192.168.2.11$i; done
+
+vim /etc/hosts
+192.168.2.116 atom1  puppetmaster
+192.168.2.117 atom2  agent1
+192.168.2.118 atom3  agent2
+192.168.2.119 atom4  agent3
+
+for i in {7..9}; do scp /etc/hosts 192.168.2.11$i:/etc/; done
+
+#set yum local 
+
+
+#set NTP server
+
+driftfile /var/lib/ntp/drift
+logfile /var/log/ntp.log
+Broadcastdelay 0.008
+restrict default kod nomodify notrap nopeer noquery
+restrict -6 default kod nomodify notrap nopeer noquery
+restrict default ignore
+restrict 127.0.0.1
+restrict -6 ::1
+restrict 192.168.2.0  mask 255.255.255.0 notrap nomodify
+server  127.127.1.0     # local clock
+fudge   127.127.1.0 stratum 10   refid NIST
+includefile /etc/ntp/crypto/pw
+keys /etc/ntp/keys
+
+set node NTP
+
+ntpdate puppetmaster
+crontab -e 
+*/30 * * * * /usr/sbin/ntpdate puppetmaster>>/root/ntdate.log 2>&1 && /sbin/clock --systohc
+
+
+/etc/init.d/ntpd restart
+
