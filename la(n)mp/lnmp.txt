@@ -1,0 +1,290 @@
+安装
+ 1安装准备pcre。为了http rewrite
+ yum install pcre-devel -y
+ openssl
+ yum install openssl-devel -y
+ 2
+ useradd nginx -s /sbin/nologin -M
+ cd nginx
+ ./configure --user=nginx --group=nginx --prefix=/application/nginx1.6.2 --with-http_stub_status_module --with-http_ssl_module
+ echo $?
+ make && make install
+ ln -s /application/nginx1.6.2 /application/nginx
+ 3
+启动
+ /application/nginx/sbin/nginx -t
+ /application/nginx/sbin/nginx
+ netstat -tlunp|grep nginx
+浏览器访问
+ ping` 10.0.0.7  物理通不通
+ telnet ip port  浏览器到web服务通不通
+curl 本地ip web服务开不开
+
+no such file or dic
+把路径添加到/etc/ld.so.com
+ldconfig
+
+部署
+
+cd nginx
+cd conf
+grep html nginx.conf 
+编辑默认站点 html/index.html
+
+egrep -v '#|^$' nginx.conf|cat -n
+
+work_processes 子进程
+ps -fe|grep nginx.conf|grep -v grep
+nginx.conf 一个server就是一虚拟主机
+配置虚拟主机
+ egrep -v '#|^$' nginx.conf>a.log 
+cp a.log nginx.conf
+vim conf
+http {
+    include       mime.types;
+    default_type  application/octet-stream;
+    sendfile        on;
+    keepalive_timeout  65;
+    server { 
+        listen       80;    
+        server_name  www.etiantian.org;
+                root html/www;
+                index index.html index.htm;
+    }       
+    server {
+        listen       80;
+        server_name  bbs.etiantian.org;
+                root html/bbs;
+                index index.html index.htm;
+    }   
+    server {
+        listen       80;
+        server_name  blog.etiantian.org;
+                root html/blog;
+                index index.html index.htm;
+    }
+}           
+基于端口
+listen 8000
+
+
+mkdir ../html/{www,blog,bbs}
+for name in www blog bbs;do echo "$name.etiantina.org">../html/$name/ind
+ex.html; done 
+for name in www blog bbs;do cat ../html/$name/index.html; done
+../sbin/nginx -t
+../sbin/nginx -s reload
+
+增加日志配置
+conf
+log_format main  
+切割日志cron+mv+
+  log_format  main  '$remote_addr - $remote_user  [$time_local]  '
+                                   ' "$request"  $status  $body_bytes_sent  '
+                                   ' "$http_referer"  "$http_user_agent" ';
+ mv access.log access_$(date +%F -d -1day).log
+date -s测试
+
+
+/server/scripts/cut_nginx_log.sh
+
+cd /application/nginx/logs &&\
+mv access.log access_$(date +%F -d -1day).log
+/application/nginx/sbin/nginx -s reload
+
+crontab -e
+#cut nginx log by tom at 20170611
+00 00 * * * /bin/sh /server/scripts/cut_nginx_log.sh>/dev/null 2>&1
+
+
+mysql
+分类
+1.社区版
+2.商业版
+3.cluster集群
+
+5.1==lamp==编译configure，make，make install
+5.5==lnmp==编译cmake，make，make install
+
+mysql安装方法：
+1.编译安装 5.1 5.5不同
+2.yum/rpm
+3.二进制包，直接解压
+
+数据库与mysql分离，web服务器如何安装mysql？
+编译到make install即可（编译php需要指定mysql）
+二进制：解压即可 
+
+tar xf mysql-5.5.32-linux2.6-x86_64.tar.gz
+mv mysql-5.5.32-linux2.6-x86_64.tar.gz /application/mysql
+ useradd mysql -s /sbin/nologin -M
+mkdir /application/mysql/data -p
+5.5初始化
+chown -R mysql.mysql /application/mysql/data/
+cp support-files/my-small.cnf /etc/my.cnf
+./scripts/mysql_install_db --user=mysql --basedir=/application/mysql --datadir=/application/mysql/data/
+
+my_print_defaults: cannot execute binary file
+
+bin/mysqld --initialize  --explicit_defaults_for_timestamp --user=mysql --basedir=/application/mysql --datadir=/application/mysql/data/  
+
+
+ /application/mysql/bin/mysqladmin -u root password 'newhand' 
+cp /application/mysql/bin/* /usr/local/bin/
+cp support-files/mysql.server /etc/init.d/mysqld
+
+php
+
+apache => libphp5.so
+nginx php =>fcgi php-fpm port 9000
+yum install zlib libxml libjpeg freetype libpng gd curl libiconv zlib-devel gd-devel libxml2-devel libpng-devel libjpeg-devel freetype-devel libpng-devel gd-devel curl-devel 
+cd libiconv-1.8
+./configure --prefix=/usr/local/libiconv
+make && make install
+
+cd libmcrypt
+./configure 
+make && make install  
+
+cd mhash
+./configure 
+make && make install  
+
+cd mcrypt
+./configure 
+make && make install  
+
+ln -s /usr/local/lib/libmcrypt.la /usr/lib/libmcrypt.la
+ln -s /usr/local/lib/libmcrypt.so /usr/lib/libmcrypt.so
+ln -s /usr/local/lib/libmcrypt.so.4 /usr/lib/libmcrypt.so.4
+ln -s /usr/local/lib/libmcrypt.so.4.4.8 /usr/lib/libmcrypt.so.4.4.4.8
+
+ln -s /usr/local/lib/libmhash.a /usr/lib/libmhash.a
+ln -s /usr/local/lib/libmhash.la /usr/lib/libmhash.la
+ln -s /usr/local/lib/libmhash.so /usr/lib/libmhash.so
+ln -s /usr/local/lib/libmhash.so.2 /usr/lib/libmhash.so.2
+ln -s /usr/local/lib/libmhash.so.2.0.1 /usr/lib/libmhash.so.2.0.1
+ln -s /usr/local/bin/libmcrypt-config /usr/bin/libmcrypt-config
+
+ ./configure LD_LIBRARY=/usr/local/lib
+make && make install 
+cd ../
+sleep 2
+
+
+yum install libxslt* -y
+cd php
+
+./configure --prefix=/application/php --with-curl --with-freetype-dir --with-gd --with-gettext --with-iconv-dir --with-kerberos --with-libdir=lib64 --with-libxml-dir --with-mysqld-user=mysql --with-unix-socket-path=/application/mysql/tmp/mysql.sock  --with-openssl --with-pcre-regex --with-pdo-mysql --with-pdo-sqlite --with-pear --with-png-dir --with-jpeg-dir --with-xmlrpc --with-xsl --with-zlib --with-bz2 --with-mhash --enable-fpm --enable-bcmath --enable-libxml --enable-inline-optimization --enable-gd-native-ttf --enable-mbregex --enable-mbstring --enable-opcache --enable-pcntl --enable-shmop --enable-soap --enable-sockets --enable-sysvsem --enable-sysvshm --enable-xml --enable-zip --with-mysqli=/application/mysql/bin/mysql_config --with-fpm-user=nginx --with-fpm-group=nginx
+
+ln -s /application/mysql/lib/libmysqlclient.so.18 /usr/lib64/
+
+cd php
+ls -l php
+cp php
+cp /home/work/tools/php-5.3.27/php.ini-production /application/php/lib/php.ini
+vim /application/php/etc/php-fpm.conf
+
+error_log =/app/logs/php-fpm.log
+pid = /app/logs/php-fpm.pid
+ 50 log_level = error
+rlimit_files =65535
+listen.owner=nginx
+listen.group=nginx
+
+pm.max_children=256
+pm.start_servers=10
+min_spare_servers=5
+max_spare_servers=20
+pm.process_idle_timeout = 15s;
+pm.max_requests = 2000
+
+/application/php/shin/php-fpm -t
+mkdir /app/logs
+
+ps -fe|grep php-fpm
+
+
+startup:
+vim /etc/rc.local
+/etc/init.d/mysqld start
+/application/php/shin/php-fpm
+/application/nginx/sbin/nginx
+
+#set nginx.conf to 9000(php)
+vim /application/nginx/conf/nginx.conf 
+
+checkout mysql
+<?php
+	$link_id=mysql_connect('localhost','root','newhand') or mysql_error();
+	if($link_id){
+		echo "mysql successful";
+	}else{
+		echo "mysql_error()";
+	}
+?>
+
+
+nginx LB(nginx proxy)：upstream proxy module
+
+cd nginx
+./configure --help|grep upstream
+
+
+worker_processes  1;
+events {
+    worker_connections  1024;
+}
+http {
+    include       mime.types;
+    default_type  application/octet-stream;
+    sendfile        on;
+    keepalive_timeout  65;
+    upstream backend{
+	#ip_hash
+        server 10.11.66.6 max_fails=3 fail_timeout=30s;  
+        server 10.11.66.6 max_fails=3 fail_timeout=30s;  
+        
+    }
+    server {
+        listen       80;
+        server_name  10.11.10.114;
+        location / {
+            proxy_pass http://backend;
+	    proxy_set_header Host $host;
+	    proxy_set_header X-Forwarded-For $remote;#web看到用户ip
+        }
+        error_page   500 502 503 504  /50x.html;
+        location = /50x.html {
+            root   html;
+        }
+
+
+
+check script：for n in 'seq 100';do curl 10.11.10.114;sleep 2;done
+
+
+nginx suanfa:rr gaijing:ip hash,session(memcache redis nosql)
+
+会话保持实现方法：
+1.lb层可以做会话保持
+lvs -p，nginx ip_hash,haproxy,haproxy cookie insert,php,java
+2.软件层session复制例如tomcat，resin，couchbase
+3，共享例如memcached的，或者其他的nosql工具，php常用这个（ 常用）
+4，门户站会用cookies或者cookies配合
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+ 

@@ -1,0 +1,263 @@
+./configure \
+--prefix=/application/apache2.2.27  \
+--enable-deflate \
+--enable-expires \
+--enable-headers \
+--enable-modules=most \
+--enable-so \
+--with-mpm=worker \
+--enable-rewrite 
+
+
+make&&make install
+
+sudo /application/apache/bin/apachectl -l|egrep "_so|_rewrite|header|expire|deflate"
+
+error:checking whether to enable mod_deflate... configure: error: mod_deflate has been
+yum install zlib-devel
+
+
+ln -s /application/apache2.2.27/ /application/apache
+
+/application/apache/bin/apachectl start
+lsof -i :80
+ps -fe|grep httpd
+apachectl -t检查语法
+apachectl graceful平滑重启
+
+虚拟主机
+ 主机名                站点目录
+www.etiantian.org     /var/html/www
+blog.etiantian.org    /var/html/blog
+bbs.etiantian.org     /var/hrml/bbs
+
+mkdir -p /var/html/{www,blog,bbs}/index.html     
+touch /var/html/{www,blog,bbs}/index.html
+
+for name in www blog bbs;do echo "http://$name.etiantian.org">/var/html/$name/inde
+x.html;done
+ for name in www blog bbs;do cat /var/html/$name/index.html;done 
+
+
+
+
+日志轮训
+cronolog
+rotatelogs
+
+日志统计
+隐藏系统及apache的版本信息(编译前)
+ap_release.h
+os.h
+
+curl -i 10.11.10.1
+隐藏版本 extra/httpd-default.conf(http.conf打开文件)
+install mysql
+groupadd mysql
+useradd mysql -g mysql -M -s /sbin/nologin
+id mysql
+tar xf mysql
+cd mysql
+./configure \
+--prefix=/application/mysql5.1.72 \
+--with-unix-socket-path=/application/mysql5.1.72/tmp/mysql.sock \
+--localstatedir=/application/mysql5.1.72/data \
+--enable-assembler \
+--enable-thread-safe-client \
+--with-mysqld-user=mysql \
+--with-big-tables \
+--without-debug \
+--with-pthread \
+--enable-assembler \
+--with-extra-charsets=complex \
+--with-readline \
+--with-ssl \
+--with-embedded-server \
+--enable-local-infile \
+--with-plugins=partition,innobase \
+--with-mysqld-ldflags=-all-static \
+--with-client-ldflags=-all-static 
+#--with-plugin-PLUGIN \
+
+
+No curses/termcap library found
+yum -y install ncurses-devel
+
+
+make && make install
+
+
+ln -s /mysql
+
+support-files/my
+cp my-small.cnf /etc/my.cnf
+mkdir /application/mysql/data -p（存放数据)
+chown -R mysql.mysql /application/mysql/
+/application/mysql/bin/mysql_install_db --basedir=/application/mysql --datadir=/application/mysql/data/ --user=mysql & 
+出现2个ok
+生成mysql，text库
+
+grep 'uname -r' /etc/hosts
+启动数据库
+cp mysql.server /etc/init.d/mysqld
+chkconfig --add mysqld 
+                 on
+chmod +x /etc/init.d/mysqld 
+启动、etc/init.d/mysqld
+netstat -tlunp|grep mysql
+登录
+vim etc profile加入mysql
+》show databases
+关闭
+mysqladin shutdown
+
+120223 21:29:59 mysqld_safe mysqld from pid file /usr/local/mysql/data/localhost.localdomain.pid ended
+在网上查了很多资料，都不是我这种情况，后来终于有高手帮忙说是，删除/usr/local/mysql/data/下的2个文件。
+ib_logfile0和ib_logfile1
+启动方法
+
+1
+/application/mysql/bin/mysql_safe &
+mysqladmin showdown
+
+2
+/etc/init.d/mysqld start 
+/etc/init.d/mysqld stop
+
+增加密码登录
+admin -u root password ''
+mysql -uroot -p 
+
+
+
+select user,host from mysql.user;
+drop user ""@httpd
+drop user ""@localhost
+
+
+--skip-grant-table
+
+
+php之前确认apache mysql正常
+
+lib库
+yum install zlib libjpeg freetype libpng gd curl libiconv zlib-devel libxml2-devel libjpeg-devel freetype-devel libpng-devel gd-devel curl-devel
+libiconv
+
+
+tar 
+cd php
+./configure \
+--prefix=/application/php5.3.27 \
+--with-apxs2=/application/apache/bin/apxs \
+--with-mysql=/application/mysql \
+--with-xmlrpc \ 
+--with-openssl \
+--with-zlib \
+--with-freetype-dir \
+--with-gd \
+--with-jpeg-dir \
+--with-png-dir \
+--with-iconv=/usr/local/libiconv \
+--enable-short-tags \
+--enable-sockets \
+--enable-zend-multibyte \
+--enable-soap \
+--enable-mbstring \ 
+--enable-static \
+--enable-gd-native-ttf \
+--with-curl \
+--with-xsl \
+--enable-ftp \
+--with-libxml-dir \
+
+
+./configure --prefix=/application/php5.3.27 --with-apxs2=/application/apache/bin/apxs 
+--with-mysql=/application/mysql --with-xmlrpc --with-openssl --with-zlib --with-freetype-dir --with-gd --with-jpeg-
+dir --with-png-dir --with-iconv=/usr/local/libiconv --enable-short-tags --enable-sockets --enable-zend-multibyte --
+enable-soap --enable-mbstring --enable-static --enable-gd-native-ttf --with-curl --with-xsl --enable-ftp --with-lib
+xml-dir 
+
+
+./configure --prefix=/application/php5.3.27 --with-apxs2=/application/apache/bin/apxs 
+--with-mysql=/application/mysql --with-xmlrpc --with-openssl-dir --with-zlib --with-freetype-dir --with-gd --with-j
+peg-dir --with-png-dir --with-iconv=/usr/local/libiconv --enable-short-tags --enable-sockets --enable-zend-multibyt
+e --enable-soap --enable-mbstring --enable-static --enable-gd-native-ttf --with-curl --with-xsl --enable-ftp --with
+-libxml-dir 
+
+make && make install
+
+
+yum -y install libxslt-devel
+
+ln -s /application/php5.3.27/ /application/php
+
+查看/application/apache/modules/是否有libphp5.so
+
+grep libphp5 /application/apache/conf/httpd.conf
+配置php
+ls php
+cp php.ini-production /application/php/lib/php.ini
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
