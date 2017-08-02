@@ -1,0 +1,210 @@
+mysql> create table t1(
+    -> col1 char(6) not null default "",                                         
+    -> col2 character(6),                                                        
+    -> col3 varchar(6),                                                          
+    -> col4 national varchar(6)); 
+
+desc t1
+explain t1
+show columns from t1
+
+mysql> desc t1
+    -> ;
++-------+------------+------+-----+---------+-------+
+| Field | Type       | Null | Key | Default | Extra |
++-------+------------+------+-----+---------+-------+
+| col1  | char(6)    | NO   |     |         |       |
+| col2  | char(6)    | YES  |     | NULL    |       |
+| col3  | varchar(6) | YES  |     | NULL    |       |
+| col4  | varchar(6) | YES  |     | NULL    |       |
+
+
+确切定义show create table t1;
+删除alter table t1 drop col2;
+alter table t1 drop col4;
+insert into t1 values('abc  ','abc  '); 
+select * from t1;
+mysql> select * from t1;
++------+-------+
+| col1 | col3  |
++------+-------+
+| abc  | abc   |
++------+-------+
+1 row in set (0.00 sec)
+
+mysql> select concat(col1,'-'),concat(col3,'-') from t1;
++------------------+------------------+
+| concat(col1,'-') | concat(col3,'-') |
++------------------+------------------+
+| abc-             | abc  -           |
++------------------+------------------+
+1 row in set (0.00 sec)
+
+
+show databases；
+show variables like 'sql_mode';
+set sql_mode =  'pad_char_to_full_length';
+mysql> show variables like 'sql_mode';          
++---------------+-------------------------+
+| Variable_name | Value                   |
++---------------+-------------------------+
+| sql_mode      | PAD_CHAR_TO_FULL_LENGTH |
++---------------+-------------------------+
+1 row in set (0.00 sec)
+
+select length(col1),length(col3) from t1;
+mysql> select length(col1),length(col3) from t1;  
++--------------+--------------+
+| length(col1) | length(col3) |
++--------------+--------------+
+|            6 |            5 |
++--------------+--------------+
+1 row in set (0.00 sec)
+
+show variables like 'sql_%'; 
+
+
+第二节  
+
+binary - char
+varbinary - varchar
+
+mysql> create table bin_t1(
+    -> col1 binary(4));
+
+mysql> desc bin_t1;
++-------+-----------+------+-----+---------+-------+
+| Field | Type      | Null | Key | Default | Extra |
++-------+-----------+------+-----+---------+-------+
+| col1  | binary(4) | YES  |     | NULL    |       |
++-------+-----------+------+-----+---------+-------+
+1 row in set (0.00 sec)
+
+insert into bin_t1 set col1='a';
+mysql> select * from bin_t1;
++------+
+| col1 |
++------+
+| a    |
++------+
+1 row in set (0.00 sec)
+
+mysql> select col1='a\0\0\0' from bin_t1; 
++----------------+
+| col1='a\0\0\0' |
++----------------+
+|              1 |
++----------------+
+1 row in set (0.00 sec)
+
+enum
+mysql> create table enum_t(
+    -> col1 enum('f','m','un'));
+Query OK, 0 rows affected (0.07 sec)
+
+mysql> desc enum_t;
++-------+--------------------+------+-----+---------+-------+
+| Field | Type               | Null | Key | Default | Extra |
++-------+--------------------+------+-----+---------+-------+
+| col1  | enum('f','m','un') | YES  |     | NULL    |       |
++-------+--------------------+------+-----+---------+-------+
+1 row in set (0.00 sec)
+
+
+mysql> insert into enum_t values('a')
+    -> ;
+Query OK, 1 row affected, 1 warning (0.02 sec)
+
+mysql> select * from enum_t;
++------+
+| col1 |
++------+
+|      |
++------+
+1 row in set (0.00 sec)
+
+mysql> insert into enum_t values('f');
+Query OK, 1 row affected (0.03 sec)
+
+mysql> select * from enum_t;
++------+
+| col1 |
++------+
+|      |
+| f    |
+| f    |
+| f    |
++------+
+4 rows in set (0.00 sec)
+
+mysql> select col1+0 from enum_t;
++--------+
+| col1+0 |
++--------+
+|      0 |
+|      1 |
+|      1 |
+|      1 |
++--------+
+4 rows in set (0.00 sec)
+
+mysql> insert into enum_t values('m') ;
+Query OK, 1 row affected (0.02 sec)
+
+mysql> select col1+0 from enum_t;
++--------+
+| col1+0 |
++--------+
+|      0 |
+|      1 |
+|      1 |
+|      1 |
+|      2 |
++--------+
+5 rows in set (0.00 sec)
+
+set
+
+
+mysql> create table set_t(
+    -> col1 set('F','M','UN'));
+Query OK, 0 rows affected (0.07 sec)
+
+mysql> desc set_t;
++-------+-------------------+------+-----+---------+-------+
+| Field | Type              | Null | Key | Default | Extra |
++-------+-------------------+------+-----+---------+-------+
+| col1  | set('F','M','UN') | YES  |     | NULL    |       |
++-------+-------------------+------+-----+---------+-------+
+1 row in set (0.00 sec)
+
+
+mysql> insert into set_t values('F')
+    -> ;
+Query OK, 1 row affected (0.02 sec)
+
+mysql> insert into set_t values('MF');
+Query OK, 1 row affected, 1 warning (0.02 sec)
+
+mysql> insert into set_t values('M,F');
+Query OK, 1 row affected (0.02 sec)
+
+mysql> select col1,col1+0 from set_t;
++------+--------+
+| col1 | col1+0 |
++------+--------+
+| F    |      1 |
+|      |      0 |
+|      |      0 |
+| F,M  |      3 |
++------+--------+
+4 rows in set (0.00 sec)
+
+
+
+
+
+
+
+
+
