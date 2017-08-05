@@ -214,6 +214,14 @@ vim /etc/rc.local
 #set nginx.conf to 9000(php)
 vim /application/nginx/conf/nginx.conf 
 
+        location ~ \.php$ {
+         #   root           /application/nginx/html/;
+            fastcgi_pass   127.0.0.1:9000;
+            fastcgi_index  index.php;
+            fastcgi_param  SCRIPT_FILENAME /application/nginx/html$fastcgi_script_name; 
+            include        fastcgi_params;
+        }
+
 checkout mysql
 <?php
 	$link_id=mysql_connect('localhost','root','newhand') or mysql_error();
@@ -223,6 +231,37 @@ checkout mysql
 		echo "mysql_error()";
 	}
 ?>
+
+vim /etc/rc.local（开机自启动，注意顺序）
+ 
+#!/bin/sh
+#
+# This script will be executed *after* all the other init scripts.
+# You can put your own initialization stuff in here if you don't
+# want to do the full Sys V style init stuff.
+ 
+touch /var/lock/subsys/local
+/etc/init.d/rpcbind start
+/application/php/sbin/php-fpm
+/application/nginx/sbin/nginx
+
+
+nginx -s reload  ：修改配置后重新加载生效
+nginx -s reopen  ：重新打开日志文件
+nginx -t -c /path/to/nginx.conf 测试nginx配置文件是否正确
+
+关闭nginx：
+nginx -s stop  :快速停止nginx
+         quit  ：完整有序的停止nginx
+
+php-fpm 关闭：
+kill -INT `cat /usr/local/php/var/run/php-fpm.pid`
+php-fpm 重启：
+kill -USR2 `cat /usr/local/php/var/run/php-fpm.pid`
+
+ps aux | grep -c php-fpm
+
+
 
 
 nginx LB(nginx proxy)：upstream proxy module

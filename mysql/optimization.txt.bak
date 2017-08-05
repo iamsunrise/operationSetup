@@ -1,0 +1,25 @@
+1.符合三范（3nf）模式
+2.分表设计
+3，配置优化
+4.合理设置索引
+5.硬件优化
+6.读写分离
+7.存储
+
+
+show 【session|global】status like 默认是session会话，指出当前
+
+show status like 'connections';
+
+#慢查询次数
+show status like 'slow_queries';
+
+如何定位慢查询
+
+构建大表（400万）-》存储过程构建
+
+默认情况10s为慢查询
+
+修改慢查询时间为1s
+show variables like 'long_query_time';
+set long_query_time = 1
