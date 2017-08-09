@@ -1,0 +1,146 @@
+apache+php(libphp5.so)
+
+
+
+
+nginx+php(fcgi php+fpm)
+
+
+
+优化都是对应一个主配置文件php.ini
+nginx php（fcgi php-fpm），php-fpm.conf
+批量执行 crt 交谈窗口
+
+
+
+ apache /application/apache/bin/apachectl -V
+nginx -V
+
+
+系统已安装 yum grouplist
+
+nginx -V安装参数
+apache cat config.nice
+mysql grep CONFIGURE_LINE /application/mysql/bin/mysqlbug 
+php -i|grep configure
+
+解决perl(加速器多用perl编写)
+字符集：
+echo 'export LC_ALL=C'>>/etc/profile
+tail -f /etc/profile
+source /etc/profile
+echo $LC_ALL
+
+yum install -y perl-devel
+
+1.安装php eaccelerator缓存加速模块(5.2-eaccelerator0.9.5 5.3-eaccelerator0.9.6.2)
+tar jxf bz2
+/application/php/bin/phpize(扩展php扩展模块)
+./configure --enable-eaccelerator=shared --with-php-config=/application/php/bin/php-config
+make && make install
+
+eaccelerator.so
+
+2.安装xcache（与eaccelerator任选1）
+tar jxf
+/application/php/bin/phpize
+./configure --enable-xcache --with-php-config=/application/php/bin/php-config
+make && make install
+
+xcache.so
+
+php加速模块的种类
+xcahce  eaccelerator zend apc
+xcahce 》 eaccelerator二选一
+
+3.zend（只支持5.2）
+（上面是操作码加速）
+
+4.memcache（php数据库之间搭建缓存）
+c/s 模式
+服务端memcached-1.4.3
+客户端memcache-2.2.5
+
+tar xf memcache-2.2.5.gz
+/application/php/bin/phpize
+./configure --with-php-config=/application/php/bin/php-config
+make && make install
+
+5.安装PDO_MYSQL(接口）
+tar zxf PDO
+/application/php/bin/phpize
+./configure --with-php-config=/application/php/bin/php-config --with-pdo-mysql=/application/mysql
+make && make install
+
+6.图像处理及imagick扩展模块
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
