@@ -106,5 +106,92 @@ call insert_emp(100001,4000000);
 show variables like 'long_query_time';
 set long_query_time = 1；
 
+把慢查询的sql记录到日志中
+默认不会记录，需要启动时启动记录慢查询
+ 5.5    bin/mysqld.exe --safe-mode --slow-query-log (可以在my.cnf，文件默认放在data目录）
+ 5.0及其以下 bin/mysqld.exe -log-slow-queries=d:/adc.log(可以在my.cnf) 
+
+my.cnf
+
+slow_query_log=TRUE
+slow_query_log_file=/usr/local/mysql/slow_query_log.txt
+long_query_time=3	
+
+添加索引
+
+
+删除索引
+alter table 表名 drop 索引名
+alter table 表名 drop primary key（主键只有一个）
+
+修改索引
+先删除再重新创建
+
+
+
+
+1.1主键索引
+创建表时，也可以在创建表后
+增加主键索引
+alter table 表名 add primary key(列名)
+
+
+查询索引
+desc 表名；（看不到索引值）
+show index from 表名；
+show keys from 表名；
+不能为null，也不能重复
+
+
+1.2普通索引
+一般来说，先创建表再创建普通索引
+
+create index 索引名 on 表（列1,列2）
+
+
+1.3全文索引
+全文索引主要用于文本检索，比如文章（针对myISAM有效）
+
+说明：
+1.针对myISAM
+2.只针对英文-》中文用sphinx（coreseek）
+3.使用方法：match（字段名）against（“关键字”）
+4.全文索引一个停止词，因为在文本中，创建索引是一个无穷大的数，因此对一些常用词和字符，就不会创建，这些词称为停止词
+
+1.4唯一索引当表的某列指定为unique时，这列就是一个唯一索引
+可以为null，并且可以多个，如果是具体内容，则不能重复
+
+创建方式
+1.create table bbb(id int primary key auto_increment,name varvhar(20) unique)
+2.创建表后，再建
+create unique index on 表名（列）
+
+索引代价
+1.占用空间
+2.对dml变慢
+
+在哪些列上适合添加索引
+
+1.较频繁作为查询添加字段应该创建索引
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
  
