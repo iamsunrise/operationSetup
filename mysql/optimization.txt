@@ -179,7 +179,53 @@ create unique index on 表名（列）
 
 
 
+慢查询优化
+ 覆盖查询
+explain select count(*) from emp a join  (select empno from emp where empno like "%1323%") b  on a.empno = b.empno; 
++----+-------------+------------+--------+---------------+---------+---------+---------+---------+--------------------------+
+| id | select_type | table      | type   | possible_keys | key     | key_len | ref     | rows    | Extra                    |
++----+-------------+------------+--------+---------------+---------+---------+---------+---------+--------------------------+
+|  1 | PRIMARY     | <derived2> | ALL    | NULL          | NULL    | NULL    | NULL    |    2200 |                          |
+|  1 | PRIMARY     | a          | eq_ref | PRIMARY       | PRIMARY | 3       | b.empno |       1 | Using index              |
+|  2 | DERIVED     | emp        | index  | NULL          | PRIMARY | 3       | NULL    | 4000101 | Using where; Using index |
++----+-------------+------------+--------+---------------+---------+---------+---------+---------+--------------------------+
+3 rows in set (1.29 sec)
 
+mysql> explain select count(*) from emp a join  (select empno from emp where empno like "%1323%") b  on a.empno = b.empno\G
+*************************** 1. row ***************************
+           id: 1
+  select_type: PRIMARY
+        table: <derived2>
+         type: ALL
+possible_keys: NULL
+          key: NULL
+      key_len: NULL
+          ref: NULL
+         rows: 2200
+        Extra: 
+*************************** 2. row ***************************
+           id: 1
+  select_type: PRIMARY
+        table: a
+         type: eq_ref
+possible_keys: PRIMARY
+          key: PRIMARY
+      key_len: 3
+          ref: b.empno
+         rows: 1
+        Extra: Using index
+*************************** 3. row ***************************
+           id: 2
+  select_type: DERIVED
+        table: emp
+         type: index
+possible_keys: NULL
+          key: PRIMARY
+      key_len: 3
+          ref: NULL
+         rows: 4000101
+        Extra: Using where; Using index
+3 rows in set (1.29 sec)
 
 
 
