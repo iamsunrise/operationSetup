@@ -1,0 +1,24 @@
+git2.2.1
+
+tar -zxvf libiconv-1.15.tar.gz
+./configure --prefix=/usr/local/libiconv
+make && make install
+
+
+
+# yum install perl curl-devel expat-devel gettext-devel openssl-devel zlib-devel -y
+# yum install cpio texinfo sgml2xml openjade perl-ExtUtils-MakeMaker -y
+# yum install asciidoc xmlto docbook2X -y    // 为了能够添加更多格式的文档（如 doc, html, info） 
+# ll /usr/bin/db2x_docbook2texi     // 剩下步骤为避免执行make all doc info时报:/bin/sh: line 1: docbook2x-texi: command not found
+-rwxr-xr-x 1 root root 3762 11月 12 2010 db2x_docbook2texi
+# ln -s /usr/bin/db2x_docbook2texi /usr/bin/docbook2x-texi
+# ll /usr/bin/{db2x_docbook2texi,docbook2x-texi}
+-rwxr-xr-x 1 root root 3762 11月 12 2010 db2x_docbook2texi
+lrwxrwxrwx 1 root root   17 1月  15 12:31 docbook2x-texi -> db2x_docbook2texi
+
+
+# make configure
+#  ./configure --prefix=/usr/local/git --with-iconv=/usr/local/libiconv
+           // 配置安装路径
+# make all doc info                    // 编译
+# make install install-doc install-html install-info   // 安装
