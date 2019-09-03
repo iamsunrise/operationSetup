@@ -1,0 +1,20 @@
+java -classpath log-collector-1.0-SNAPSHOT-jar-with-dependencies.jar com.atguigu.appclient.AppMain > /tmp/test.log
+
+ansible all -a "java -classpath log-collector-1.0-SNAPSHOT-jar-with-dependencies.jar com.atguigu.appclient.AppMain 1 1000> /tmp/test.log"
+
+ansible all -m copy -a "src=log-collector-1.0-SNAPSHOT-jar-with-dependencies.jar dest=/home/work/project/appEcommerce"
+
+ansible all -a "java -classpath /home/work/project/appEcommerce/log-collector-1.0-SNAPSHOT-jar-with-dependencies.jar com.atguigu.appclient.AppMain 1 1000> /tmp/test.log"
+
+ansible all -a 'java -classpath /home/work/project/appEcommerce/log-collector-1.0-SNAPSHOT-jar-with-dependencies.jar com.atguigu.appclient.AppMain >/tmp/test.log '
+
+
+
+hadoop 
+./hadoop-common-2.6.5.jar
+./hadoop-hdfs-2.6.5.jar
+./hadoop-auth-2.6.5.jar
+./commons-configuration-1.6.jar
+./commons-io-2.4.jar
+./htrace-core-3.0.4.jar
+¿½±´µ½flume/libÏÂ

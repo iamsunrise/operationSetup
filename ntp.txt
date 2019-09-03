@@ -1,0 +1,21 @@
+vim /etc/udev/rules.d/70-persistent-ipoib.rules
+3.4查看所有可用的时区
+
+timedatectl list-timezones
+# 亚洲
+timedatectl list-timezones |  grep  -E "Asia/S.*"
+　　3.5设置时区
+
+timedatectl set-timezone Asia/Shanghai
+　　3.6设置硬件时间
+# 硬件时间默认为UTC
+timedatectl set-local-rtc 1
+# hwclock --systohc --localtime
+# 两条命令效果等同
+
+
+
+ntpdate -u ntp.api.bz
+hwclock --show
+hwclock -w
+

@@ -1,0 +1,42 @@
+qemu-kvm
+
+在Linux环境下，在终端输入#egrep -c '(vmx|svm)' /proc/cpuinfo
+0 表示不支持，1 表示支持。
+
+yum install qemu-img
+systemctl enable libvirtd
+
+qemu-img create -f raw centos-7.raw 10g
+
+virt-install --virt-type kvm --name centos1 --ram 512 --disk path=/home/work/kvm/centos7.raw --graphics vnc,listen=0.0.0.0 --cdrom /home/work/tools/CentOS-7-x86_64-Minimal-1810.iso
+systemctl daemon-reload
+
+systemctl enable vncserver@:1.service
+
+然后开启vnc服务
+
+systemctl start vncserver@:1.service
+
+ virt-install --connect qemu:///system --virt-type kvm --name rhel5 --ram 512 --disk path=/var/lib/libvirt/images/rhel5.img,size=8 --graphics vnc,listen=0.0.0.0 --cdrom /tmp/boot.iso --os-variant rhel5  
+
+Skip to content
+
+
+[root@test-R410-4disk qemu]# virt-install –name=convirt –ram=512 –vcpus=2 –cpu=core2duo –pxe –os-type=linux –disk path=/data/vm/convirt.img,size=50 –network bridge=br1,model=virtio –network bridge=br0,model=virtio –graphics vnc,password=123456,port=9903 –hvm –force
+
+ERROR    Guest name ‘convirt’ is already in use.
+
+这点kvm和xen不同，xen的半虚拟化要想重装，只要把创建好的虚拟机配置文件删掉就可以了
+
+kvm如果想要重装相同名字的虚拟机，只需要在虚拟机停止的状态下执行如下命令
+
+[root@test-R410-4disk qemu]# virsh undefine convirt 
+Domain convirt has been undefined
+
+这样，虚拟机就被干掉了，同样，相应的xml配置文件也干掉了。
+
+然后在执行virt-install安装就不会报错了。
+
+
+
+
