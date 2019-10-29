@@ -1,0 +1,2 @@
+ ansible zookeeper -a "/usr/local/zookeeper/bin/zkServer.sh status"
+ansible zookeeper -a "/usr/local/zookeeper/bin/zkServer.sh start"
