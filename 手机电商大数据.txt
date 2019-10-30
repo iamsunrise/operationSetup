@@ -6,7 +6,12 @@ ansible all -m copy -a "src=log-collector-1.0-SNAPSHOT-jar-with-dependencies.jar
 
 ansible all -a "java -classpath /home/work/project/appEcommerce/log-collector-1.0-SNAPSHOT-jar-with-dependencies.jar com.atguigu.appclient.AppMain 1 1000> /tmp/test.log"
 
-ansible all -a 'java -classpath /home/work/project/appEcommerce/log-collector-1.0-SNAPSHOT-jar-with-dependencies.jar com.atguigu.appclient.AppMain >/tmp/test.log '
+ansible all -a 'java -classpath /home/work/project/appEcommerce/log-collector-1.0-SNAPSHOT-jar-with-dependencies.jar com.atguigu.appclient.AppMain  '
+
+
+ansible all -a 'date -s 2019-09-02'
+ansible all -a 'ntpdate -u ntp.api.bz'
+ansible all -a 'date '
 
 
 

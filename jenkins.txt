@@ -1,0 +1,8 @@
+/root/.jenkins/secrets/initialAdminPassword
+700bd160ed394c339a466cd80377c62f
+700bd160ed394c339a466cd80377c62f
+700bd160ed394c339a466cd80377c62f
+
+
+cat JENKINS_HOME/secrets/initialAdminPassword
+/root/.jenkins/secrets/initialAdminPassword
