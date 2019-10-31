@@ -1,8 +1,4 @@
-<<<<<<< HEAD
- ansible zookeeper -a "/usr/local/zookeeper/bin/zkServer.sh status"
-ansible zookeeper -a "/usr/local/zookeeper/bin/zkServer.sh start"
-=======
-ansible zk -m shell -a "/usr/local/zookeeper/bin/zkServer.sh start
+ansible zk -m shell -a "/usr/local/zookeeper/bin/zkServer.sh start"
 ansible zk -m shell -a "/usr/local/zookeeper/bin/zkServer.sh restart"
 ansible zk -m shell -a "/usr/local/zookeeper/bin/zkServer.sh stop"
 ansible zk -m shell -a "/usr/local/zookeeper/bin/zkServer.sh start"
@@ -10,4 +6,3 @@ ansible zk -m shell -a "/usr/local/zookeeper/bin/zkServer.sh start"
 /usr/local/zookeeper/bin/zkCli.sh -timeout 5000 -server 10.11.10.212:12181
 
  
->>>>>>> 34877e9d793dd7f4bc743735c4fb405493f18084
