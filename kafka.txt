@@ -2,6 +2,6 @@ ansible all -a "/usr/local/kafka/bin/kafka-server-start.sh /usr/local/kafka/conf
 ansible all -m shell -a "export JMX_PORT=9988 && /usr/local/kafka/bin/kafka-server-start.sh -daemon /usr/local/kafka/config/server.properties" 
 ansible all -a "/usr/local/kafka/bin/kafka-server-stop.sh stop"
 ansible all -a "/usr/local/hadoop/sbin/start-all.sh start"
-nohup bin/kafka-manager   -Dhttp.port=7456 >/usr/local/kafka/start.log 2>&1 &
+nohup /usr/local/kafka-manager/bin/kafka-manager   -Dhttp.port=7456 >/usr/local/kafka/start.log 2>&1 &
 bin/kafka-producer-perf-test.sh  --topic test --record-size 100 --num-records 100000 --throughput 1000 --producer-props bootstrap.servers=192.168.0.131:9092,192.168.0.132:9092,192.168.0.133:9092
 
