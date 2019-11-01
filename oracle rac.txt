@@ -949,6 +949,8 @@ Located 1 voting disk(s).
 ¼¯ÈºÆô¶¯
 
 /bin/dd if=/var/tmp/.oracle/npohasd of=/dev/null bs=1024 count=1
+ansible rac -m service -a "name=iscsi state=started"
+ansible rac -m shell -a "start_udev"
 rac1£¬rac2  /u01/app/11.2.0/grid/bin/crsctl start cluster -all
 /u01/app/11.2.0/grid/bin/crsctl stop cluster -all
 export ORACLE_SID=racdb1
