@@ -1,0 +1,38 @@
+racdb=
+(DESCRIPTION =    
+	(ADDRESS_LIST =      
+		(ADDRESS = (PROTOCOL = TCP)(HOST = 192.168.2.10)(PORT = 1521))   
+ 	)    
+	(CONNECT_DATA =      
+		(SERVICE_NAME = racdb)    
+	)
+)
+
+racdb1=
+(DESCRIPTION =    
+	(ADDRESS_LIST =      
+		(ADDRESS = (PROTOCOL = TCP)(HOST = 192.168.2.118)(PORT = 1521))   
+ 	)      
+	(CONNECT_DATA =      
+		(SERVICE_NAME = racdb)    
+	)
+)
+
+racdb2=
+(DESCRIPTION =    
+	(ADDRESS_LIST =      
+		(ADDRESS = (PROTOCOL = TCP)(HOST = 192.168.2.121)(PORT = 1521))   
+ 	)    
+	(CONNECT_DATA =      
+		(SERVICE_NAME = racdb)    
+	)
+)
+racdb_re=
+(DESCRIPTION =    
+	(ADDRESS_LIST =      
+		(ADDRESS = (PROTOCOL = TCP)(HOST = 47.103.91.187)(PORT = 50035))   
+ 	)    
+	(CONNECT_DATA =      
+		(SERVICE_NAME = racdb)    
+	)
+)
