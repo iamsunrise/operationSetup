@@ -1,0 +1,1101 @@
+vi /etc/hosts
+
+#Public IP 
+
+192.168.2.118 rac1
+192.168.2.121 rac2
+
+#Private IP
+
+192.168.1.139 rac1-priv
+192.168.1.142 rac2-priv
+
+#Virtual IP
+
+192.168.2.18  rac1-vip
+192.168.2.21  rac2-vip
+
+#scan IP
+
+192.168.2.10 rac-scan
+
+
+10.18.12.140            S1P32    # RAC1 Public     
+
+10.18.12.142            S1P32-vip  # RAC1 VIP     
+
+22.22.22.140            S1P32-priv  # RAC1 Private   
+
+10.18.12.141            S1P33  # RAC2 Public        
+ 
+10.18.12.143            S1P33-vip  # RAC2 VIP    
+ 
+22.22.22.141            S1P33-priv  #RAC2 Private   
+
+10.18.12.144            catdb-scan       # RAC SCAN
+
+创建用户和组
+groupadd -g 501 oinstall &&
+groupadd -g 502 dba     &&
+groupadd -g 503 oper &&
+groupadd -g 504 asmadmin &&
+groupadd -g 505 asmoper &&
+groupadd -g 506 asmdba &&
+useradd -g oinstall -G dba,asmdba,oper oracle &&
+useradd -g oinstall -G asmadmin,asmdba,asmoper,oper,dba grid 
+
+
+passwd grid
+passwd oracle
+
+su - grid
+vim .bash_profile
+
+export ORACLE_SID=+ASM1(+ASM2)
+export ORACLE_BASE=/u01/app/grid
+export ORACLE_HOME=/u01/app/11.2.0/grid
+export LD_LIBRARY_PATH=$ORACLE_HOME/lib
+export NLS_DATE_FORMAT="yyyy-mm-dd HH24:MI:SS"
+export PATH=$ORACLE_HOME/bin:$PATH
+export LANG=en_US
+umask 022
+
+
+su - oracle
+vi ~/.bash_profile
+
+export ORACLE_SID=rac1(rac2)
+export ORACLE_BASE=/u01/app/oracle
+export ORACLE_HOME=$ORACLE_BASE/product/11.2.0/dbhome_1
+export LD_LIBRARY_PATH=$ORACLE_HOME/lib
+export NLS_DATE_FORMAT="yyyy-mm-dd HH24:MI:SS"
+export TMP=/tmp
+export TMPDIR=$TMP
+export PATH=$PATH:$ORACLE_HOME/bin
+export CLASSPATH=$ORACLE_HOME/JRE:$ORACLE_HOME/jlib:$ORACLE_HOME/rdbms/jlib
+umask 022
+
+
+创建所需目录和设置权限
+在节点rac-1、rac-2上执行以下命令：
+mkdir -p /u01/app/oracle &&
+mkdir -p /u01/app/grid &&
+mkdir -p /u01/app/11.2.0/grid &&
+chown -R grid:oinstall /u01/app/grid &&
+chown -R grid:oinstall /u01/app/11.2.0 &&
+chown -R oracle:oinstall /u01/app/oracle &&
+chmod -R 775 /u01 &&
+mkdir -p /u01/app/oraInventory &&
+chown -R grid:oinstall /u01/app/oraInventory &&
+chmod -R 775 /u01/app/oraInventory
+
+
+
+修改配置文件
+在节点rac-1、rac-2修改以下配置文件
+
+1. selinux的配置文件
+
+setenforce 0           #立即生效，临时关闭，重启恢复
+
+vi /etc/selinux/config
+
+设置SELINUX=disabled，#永久关闭，重启生效
+
+ 
+
+2.修改/etc/pam.d/login
+
+[root@rac1~]# vi /etc/pam.d/login
+
+添加以下内容：
+
+session required pam_limits.so
+
+3.修改limits.conf
+
+由于oracle软件拥有者的默认硬限制不足以安装和配置oracle grid infrastructure
+
+cp /etc/security/limits.conf /etc/security/limits.conf.bak
+vi /etc/security/limits.conf
+
+添加以下内容：
+
+oracle soft nproc 2047
+oracle hard nproc 16384
+oracle soft nofile 1024
+oracle hard nofile 65536
+oracle soft stack 10240
+
+ 
+
+grid soft nproc 2047
+grid hard nproc 16384
+grid soft nofile 1024
+grid hard nofile 65536
+grid soft stack 10240
+
+ 
+
+4.修改/etc/profile
+
+cp /etc/profile /etc/profile.bak
+vi /etc/profile
+
+在文件最后添加以下内容：
+
+#set oracle rac env
+if [ $USER = "ORACLE" ] || [ $USER = "GRID" ];then
+    if [ $SHELL = "/bin/ksh" ];then
+       ulimit -p 16384
+       ulimit -n 65536
+    else
+       ulimit -u 16384 -n 65536
+    fi
+    umask 022
+fi
+
+ 
+
+5.修改/etc/sysctl.conf
+
+cp /etc/sysctl.conf /etc/sysctl.conf.bak
+vi /etc/sysctl.conf
+
+添加以下内容：
+
+fs.aio-max-nr = 1048576
+fs.file-max = 6815744
+kernel.shmall = 2097152
+kernel.shmmax = 1073741824  #1/2物理内存（单位M）*1024*1024
+kernel.shmmni = 4096
+kernel.sem = 250 32000 100 128
+net.ipv4.ip_local_port_range = 9000 65500
+net.core.rmem_default = 262144
+net.core.rmem_max = 4194304
+net.core.wmem_default = 262144
+net.core.wmem_max = 1048586
+net.ipv4.tcp_wmem = 262144 262144 262144
+net.ipv4.tcp_rmem = 4194304 4194304 4194304
+
+ 
+
+[root@rac1~]sysctl -p
+
+
+
+停止并删除ntp服务以及其他不需要的服务
+CTSS时间同步服务作为Oracle Clusteware的一部分被安装，在系统中，如果察觉到时间同步服务或者时间同步服务配置，那么CTSS将以观察模式（Oberver Mode）启动和运行，不执行时间同步操作。CTSS守护进程能随时被安装，并将一直运行，但是只有在系统符合配置条件情况下才会起作用。如果NTP不存在于任何的集群服务器中，CTSS将被激活，接管集群的时间管理工作，以活动模式（Active Mode）启动和运行，使用集群其中一个服务器作为参考服务器，同步集群中的其他服务器的时间。
+
+ 
+
+建议使用CTSS，所以关闭ntp服务，并关闭开机自启动。
+
+在节点rac-1、rac-2停用ntp服务，并删除ntp服务的配置。
+
+[root@rac1~]# service ntpd status
+
+ntpd is stopped
+
+[root@rac1~]# chkconfig ntpd off
+
+[root@rac1~]# cp /etc/ntp.conf /etc/ntp.conf.bak
+
+[root@rac1~]# rm -rf /etc/ntp.conf
+
+同样，在rac-2上也停止并删除ntp服务。
+
+
+其他不需要的服务也一并关掉开机自启，有些可能因为就没有安装这个服务报错，可以忽略；
+
+chkconfig autofs off
+chkconfig acpid off
+chkconfig sendmail off
+chkconfig cups-config-daemon off
+chkconfig cpus off
+chkconfig xfs off
+chkconfig lm_sensors off
+chkconfig gpm off
+chkconfig openibd off
+chkconfig pcmcia off
+chkconfig cpuspeed off
+chkconfig nfslock off
+chkconfig ip6tables off
+chkconfig iptables off
+chkconfig rpcidmapd off
+chkconfig apmd off
+chkconfig sendmail off
+chkconfig arptables_jf off
+chkconfig microcode_ctl off
+chkconfig rpcgssd off
+
+配置oracle，grid 用户SSH对等性
+（11g之后不配也行，后面安装软件的时候会有图形化的ssh配置）
+
+在节点rac-1和rac-2上配置oracle、gird用户ssh对等性。
+
+su - oracle
+mkdir ~/.ssh
+chmod 700 ~/.ssh
+ssh-keygen -t rsa
+
+一路回车
+
+ssh-keygen -t dsa
+
+一路回车（两个节点都要生成）
+
+返回节点1：
+
+grid
+cat ~/.ssh/id_dsa.pub >>~/.ssh/authorized_keys
+cat ~/.ssh/id_rsa.pub >>~/.ssh/authorized_keys
+ssh rac2 cat ~/.ssh/id_rsa.pub >>~/.ssh/authorized_keys
+ssh rac2 cat ~/.ssh/id_dsa.pub >>~/.ssh/authorized_keys
+scp ~/.ssh/authorized_keys oracle@rac2:~/.ssh/authorized_keys
+scp ~/.ssh/authorized_keys grid@rac2:~/.ssh/authorized_keys
+scp ~/.ssh/authorized_keys rac2:~/.ssh/authorized_keys
+
+cat ~/.ssh/id_rsa.pub >>~/.ssh/authorized_keys
+ssh rac1 cat ~/.ssh/id_rsa.pub >>~/.ssh/authorized_keys
+ssh rac1 cat ~/.ssh/id_dsa.pub >>~/.ssh/authorized_keys
+
+
+
+scp ~/.ssh/authorized_keys oracle@rac1:~/.ssh/authorized_keys
+
+ssh-keygen -t rsa
+ssh-keygen -t dsa  
+grid@rac1 
+cat ~/.ssh/id_rsa.pub >>~/.ssh/authorized_keys
+cat ~/.ssh/id_dsa.pub >>~/.ssh/authorized_keys
+ssh rac2  cat ~/.ssh/id_rsa.pub >>~/.ssh/authorized_keys
+ssh rac2  cat ~/.ssh/id_dsa.pub >>~/.ssh/authorized_keys
+scp ~/.ssh/authorized_keys rac2:~/.ssh
+
+grid@rac2 
+cat ~/.ssh/id_rsa.pub >>~/.ssh/authorized_keys
+cat ~/.ssh/id_dsa.pub >>~/.ssh/authorized_keys
+ssh rac1  cat ~/.ssh/id_rsa.pub >>~/.ssh/authorized_keys
+ssh rac1  cat ~/.ssh/id_dsa.pub >>~/.ssh/authorized_keys
+scp ~/.ssh/authorized_keys rac1:~/.ssh
+
+scp ~/.ssh/authorized_keys grid@rac1:~/.ssh/authorized_keys
+验证，节点rac1、rac2
+
+
+
+
+
+perl /u01/app/11.2.0/grid/crs/install/rootcrs.pl  -verbose -deconfig -force
+
+ssh rac1 date
+ssh rac2 date
+ssh rac1-priv  date
+ssh rac2-priv  date
+
+
+配置yum源，安装必要软件
+vi /etc/yum.repos.d/base.repo
+
+ 
+
+[base]
+
+name=base
+
+baseurl=ftp://172.17.62.160/pub/centos6.5  #也可以使用本地yum源 file:///挂载点
+
+enable=1
+
+gpgcheck=0
+
+ 
+
+rm -rf /etc/yum.repos.d/CentOS-*
+
+yum clean all
+
+yum list
+
+yum install  binutils*  compat-libstdc*  elfutils-libelf*  gcc*  glibc*  ksh*  libaio*  libgcc* libstdc*  make*  sysstat*  unixODBC*  libaio-devel*  glibc-devel.* libaio.* libaio-devel.*  libstdc++-devel.* unixODBC-devel.* compat-libcap1*  compat-libcap1.*  expat* 
+上传ORACLE 11g的安装介质，并解压
+
+为便于将来安装软件，分别将其move到oracle用户和grid用户的家目录：
+
+[root@rac1 ~]# mv database/ /home/oracle/
+
+[root@rac1~]# mv grid/ /home/grid/
+
+确认一下两个节点RPM包cvuqdisk-1.0.9-1.rpm是否安装。
+
+#rpm -qa|grep cvuqdisk
+
+如果没装，在两个节点执行如下
+
+[root@rac1~]#cd /home/grid/grid/rpm/
+
+[root@rac1~]#rpm -ivh cvuqdisk-1.0.9-1.rpm
+
+[root@rac1~]#scp  /home/grid/grid/rpm/cvuqdisk-1.0.9-1.rpm root@rac-2:/root
+
+[root@rac-2 ~]# rpm -ivh cvuqdisk-1.0.9-1.rpm
+
+
+rac1
+
+安装Grid软件
+安装前预检查配置信息
+[grid@rac1grid]$ ./runcluvfy.sh stage -pre crsinst -n rac1,rac2 -fixup -verbose
+
+i386类的依赖软间可能因为版本问题，检查不成功
+
+/bin/rm: cannot remove `/tmp/bootstrap': Operation not permitted
+
+./runcluvfy.sh: line 99: /tmp/bootstrap/ouibootstrap.log: Permission denied
+
+权限不足导致，
+
+[root@rac1~]# chown -R grid:oinstall /tmp/bootstrap
+
+--为grid赋权
+
+chown -R grid:oinstall /tmp/bootstrap
+
+#ifconfig eth0:0 192.168.2.18 netmask 255.255.255.0 up
+#ifconfig eth0:0 192.168.2.21 netmask 255.255.255.0 up
+
+vi /etc/sysconfig/network
+
+/usr/sbin/gdm -restart
+
+
+确认集群安装成功
+
+/bin/dd if=/var/tmp/.oracle/npohasd of=/dev/null bs=1024 count=1
+
+检查crs状态：
+
+[root@rac1~]# su - grid
+
+[grid@rac1~]$ crsctl check crs
+
+CRS-4638: Oracle High Availability Services is online
+
+CRS-4537: Cluster Ready Services is online
+
+CRS-4529: Cluster Synchronization Services is online
+
+CRS-4533: Event Manager is online
+
+ 
+
+检查Clusterware资源：
+
+[grid@rac1~]$ crs_stat -t -v
+
+Name           Type           R/RA   F/FT   Target    State     Host       
+
+----------------------------------------------------------------------
+
+ora....ER.lsnr ora....er.type 0/5    0/     ONLINE    ONLINE    rac1  
+
+ora....N1.lsnr ora....er.type 0/5    0/0    ONLINE    ONLINE    rac1  
+
+ora....TING.dg ora....up.type 0/5    0/     ONLINE    ONLINE    rac1  
+
+ora....DATA.dg ora....up.type 0/5    0/     ONLINE    ONLINE    rac1  
+
+ora...._FRA.dg ora....up.type 0/5    0/     ONLINE    ONLINE    rac1  
+
+ora.asm        ora.asm.type   0/5    0/     ONLINE    ONLINE    rac1  
+
+ora.cvu        ora.cvu.type   0/5    0/0    ONLINE    ONLINE    rac-2   
+
+ora.gsd        ora.gsd.type   0/5    0/     OFFLINE   OFFLINE              
+
+ora....network ora....rk.type 0/5    0/     ONLINE    ONLINE    rac1  
+
+ora.oc4j       ora.oc4j.type  0/1    0/2    ONLINE    ONLINE    rac1  
+
+ora.ons        ora.ons.type   0/3    0/     ONLINE    ONLINE    rac1  
+
+ora....SM1.asm application    0/5    0/0    ONLINE    ONLINE    rac1  
+
+ora....E1.lsnr application    0/5    0/0    ONLINE    ONLINE    rac1  
+
+ora....de1.gsd application    0/5    0/0    OFFLINE   OFFLINE              
+
+ora....de1.ons application    0/3    0/0    ONLINE    ONLINE    rac1  
+
+ora....de1.vip ora....t1.type 0/0    0/0    ONLINE    ONLINE    rac1  
+
+ora....SM2.asm application    0/5    0/0    ONLINE    ONLINE    rac-2   
+
+ora....E2.lsnr application    0/5    0/0    ONLINE    ONLINE    rac-2   
+
+ora....de2.gsd application    0/5    0/0    OFFLINE   OFFLINE              
+
+ora....de2.ons application    0/3    0/0    ONLINE    ONLINE    rac-2   
+
+ora....de2.vip ora....t1.type 0/0    0/0    ONLINE    ONLINE    rac-2   
+
+ora.scan1.vip  ora....ip.type 0/0    0/0    ONLINE    ONLINE    rac1  
+
+ora.testdb.db  ora....se.type 0/2    0/1    ONLINE    ONLINE    rac1  
+
+ 
+
+注：
+
+oc4j、gsd默认服务是禁用的
+
+
+OracleRAC管理 之 集群状态&信息查看
+[11:34:11oracle@rac1 ~]crs_stat -t
+
+Name           Type           Target    State     Host        
+
+------------------------------------------------------------
+
+ora.dba.db     application    ONLINE    ONLINE    rac2      
+
+ora....l1.inst application    ONLINE    ONLINE    rac1       
+
+ora....l2.inst application    ONLINE    ONLINE    rac2      
+
+ora.dba.rac.cs application    ONLINE    ONLINE    rac2      
+
+ora....ll1.srv application    ONLINE    ONLINE    rac1       
+
+ora....ll2.srv application    ONLINE    ONLINE    rac2      
+
+ora....SM1.asm application    ONLINE    ONLINE    rac1       
+
+ora....E1.lsnr application    ONLINE    ONLINE    rac1       
+
+ora.rac1.gsd  application    ONLINE    ONLINE    rac1       
+
+ora.rac1.ons  application    ONLINE    ONLINE    rac1       
+
+ora.rac1.vip  application    ONLINE    ONLINE    rac1       
+
+ora....SM2.asm application    ONLINE    ONLINE    rac2      
+
+ora....E2.lsnr application    ONLINE    ONLINE    rac2      
+
+ora.rac2.gsd  application    ONLINE    ONLINE    rac2      
+
+ora.rac2.ons  application    ONLINE    ONLINE    rac2      
+
+ora.rac2.vip  application    ONLINE    ONLINE    rac2 
+
+ 
+
+查看集群资源信息
+
+[12:59:42oracle@rac2~]srvctl  config database -d dba -a
+
+rac1 null1 /u01/app/oracle/product/10.2.0/db_1
+
+rac2null2 /u01/app/oracle/product/10.2.0/db_1
+
+DB_NAME: dba
+
+ORACLE_HOME: /u01/app/oracle/product/10.2.0/db_1
+
+SPFILE: +DATA/dba/spfilenull.ora
+
+DOMAIN: wang.com
+
+DB_ROLE: null
+
+START_OPTIONS: null
+
+POLICY:  AUTOMATIC
+
+ENABLE FLAG: DB ENABLED
+
+ 
+
+查看连接信息
+
+[13:01:55oracle@rac2~]srvctl config database -d dba -t
+
+Example client-side TNS entry for service rac:
+
+rac = (DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=db_vip)(PORT=dedicated_port))(CONNECT_DATA=(SERVICE_NAME=rac.wang.com)(FAILOVER_MODE=(TYPE=SELECT)(METHOD=BASIC))))
+
+Example client-side TNS entry for service name:
+
+name = (DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=db_vip)(PORT=dedicated_port))(CONNECT_DATA=(SERVICE_NAME=name.wang.com)(FAILOVER_MODE=(TYPE=SELECT)(METHOD=BASIC))))
+
+ 
+
+查看服务信息
+
+[13:02:20oracle@rac2~]srvctl config service  -d dba -a
+
+rac PREF: null2 null1 AVAIL:  TAF: basic
+
+name PREF: null2 null1 AVAIL:  TAF: basic
+
+ 
+
+[13:02:45oracle@rac2~]srvctl config service  -d dba -s rac
+
+rac PREF: null2 null1 AVAIL: 
+
+ 
+
+[13:03:01oracle@rac2~]srvctl config service  -d dba -s rac -a
+
+rac PREF: null2 null1 AVAIL:  TAF: basic
+
+ 
+
+查看ASM信息
+
+[13:05:41oracle@rac2~]srvctl config asm -n rac1
+
++ASM1 /u01/app/oracle/product/10.2.0/db_1
+
+[13:05:44oracle@rac2~]
+
+[13:05:53oracle@rac2~]srvctl config asm -n rac2
+
++ASM2 /u01/app/oracle/product/10.2.0/db_1
+
+[13:05:56oracle@rac2~]
+
+ 
+
+查看监听信息
+
+[13:05:57oracle@rac2~]srvctl config listener -n rac2   
+
+rac2LISTENER_rac2
+
+[13:06:15oracle@rac2~]
+
+[13:06:16oracle@rac2~]srvctl config listener -n rac1
+
+rac1 LISTENER_rac1
+
+ 
+
+查看数据库状态
+
+[13:08:40oracle@rac2~]srvctl  status database -d dba 
+
+Instance null1 is running on node rac1
+
+Instance null2 is running on node rac2
+
+ 
+
+[13:08:43oracle@rac2~]srvctl  status database -d dba -v
+
+Instance null1 is running on node rac1 with online services rac name 
+
+Instance null2 is running on node rac2with online services rac name 
+
+ 
+
+查看监听状态
+
+[13:09:27oracle@rac2~]srvctl status instance -d dba -i null1,null2
+
+Instance null1 is running on node rac1
+
+Instance null2 is running on node rac2
+
+ 
+
+[13:09:40oracle@rac2~]srvctl status instance -d dba -i null1,null2 -v
+
+Instance null1 is running on node rac1 with online services rac name 
+
+Instance null2 is running on node rac2with online services rac name 
+
+ 
+
+查看节点应用状态
+
+[13:10:29oracle@rac2~]srvctl status nodeapps -n rac1
+
+VIP is running on node: rac1
+
+GSD is running on node: rac1
+
+Listener is running on node: rac1
+
+ONS daemon is running on node: rac1
+
+ 
+
+[13:11:44oracle@rac2~]srvctl status nodeapps -n rac2
+
+VIP is running on node: rac2
+
+GSD is running on node: rac2
+
+Listener is running on node: rac2
+
+ONS daemon is running on node: rac2
+
+ 
+
+查看节点ASM状态
+
+[13:11:47oracle@rac2~]srvctl status asm -n rac1
+
+ASM instance +ASM1 is running on node rac1.
+
+ 
+
+[13:12:26oracle@rac2~]srvctl status asm -n rac2
+
+ASM instance +ASM2 is running on node rac2.
+
+ 
+
+测试TAF
+
+设定服务TAF模式为BASIC
+
+RAC =
+
+  (DESCRIPTION =
+
+    (ADDRESS = (PROTOCOL = TCP)(HOST = rac1-vip)(PORT = 1521))
+
+    (ADDRESS = (PROTOCOL = TCP)(HOST = rac2-vip)(PORT = 1521))
+
+    (LOAD_BALANCE = yes)
+
+    (CONNECT_DATA =
+
+      (SERVER = DEDICATED)
+
+      (SERVICE_NAME = rac.wang.com)
+
+      (FAILOVER_MODE =
+
+        (TYPE = SELECT)
+
+        (METHOD = BASIC)
+
+        (RETRIES = 180)
+
+        (DELAY = 5)
+
+      )
+
+    )
+
+  )
+
+ 
+
+查看集群状态
+
+[11:55:50oracle@rac2dbs]crs_stat -t
+
+Name           Type           Target    State     Host        
+
+------------------------------------------------------------
+
+ora.dba.db     application    ONLINE    ONLINE    rac2      
+
+ora....name.cs application    ONLINE    ONLINE    rac2      
+
+ora....ll1.srv application    ONLINE    ONLINE    rac1       
+
+ora....ll2.srv application    ONLINE    ONLINE    rac2      
+
+ora....l1.inst application    ONLINE    ONLINE    rac1       
+
+ora....l2.inst application    ONLINE    ONLINE    rac2      
+
+ora.dba.rac.cs application    ONLINE    ONLINE    rac2      
+
+ora....ll1.srv application    ONLINE    ONLINE    rac1       
+
+ora....ll2.srv application    ONLINE    ONLINE    rac2      
+
+ora....SM1.asm application    ONLINE    ONLINE    rac1       
+
+ora....E1.lsnr application    ONLINE    ONLINE    rac1       
+
+ora.rac1.gsd  application    ONLINE    ONLINE    rac1       
+
+ora.rac1.ons  application    ONLINE    ONLINE    rac1       
+
+ora.rac1.vip  application    ONLINE    ONLINE    rac1       
+
+ora....SM2.asm application    ONLINE    ONLINE    rac2      
+
+ora....E2.lsnr application    ONLINE    ONLINE    rac2      
+
+ora.rac2.gsd  application    ONLINE    ONLINE    rac2      
+
+ora.rac2.ons  application    ONLINE    ONLINE    rac2      
+
+ora.rac2.vip  application    ONLINE    ONLINE    rac2  
+
+ 
+
+连接数据库进行长事务查询
+
+[11:59:41oracle@rac1 ~]sqlplus sys/oracle@rac as sysdba
+
+ 
+
+SQL*Plus: Release 10.2.0.1.0 - Production on Thu May 27 11:59:56 2010
+
+ 
+
+Copyright (c) 1982, 2005, Oracle.  All rights reserved.
+
+ 
+
+ 
+
+Connected to:
+
+Oracle Database 10g Enterprise Edition Release 10.2.0.1.0 - 64bit Production
+
+With the Partitioning, Real Application Clusters, OLAP and Data Mining options
+
+ 
+
+SYS@rac2:null2>show parameter service_name
+
+ 
+
+NAME                                 TYPE        VALUE
+
+------------------------------------ ----------- ------------------------------
+
+service_names                       string      dba.wang.com, rac, name
+
+SYS@rac2:null2>
+
+SYS@rac2:null2>show parameter db_name;
+
+ 
+
+NAME                                 TYPE        VALUE
+
+------------------------------------ ----------- ------------------------------
+
+db_name                              string      dba
+
+SYS@rac2:null2>
+
+SYS@rac2:null2>show parameter instance_name;
+
+ 
+
+NAME                                 TYPE        VALUE
+
+------------------------------------ ----------- ------------------------------
+
+instance_name                        string      null2
+
+ 
+
+SYS@rac2:null2>select * from dba_objects;
+
+ 
+
+在事务执行过程中关闭当前所连接的实例
+
+[12:00:47oracle@rac2admin]srvctl  stop instance -i null2 -d dba -o abort
+
+ 
+
+可观察到该长事务中断若干秒后继续查询
+
+2005-10-22 21:50:51 2005-10-22 21:51:00 2005-10-22:21:50:51 VALID   N N N
+
+ 
+
+观察集群状态
+
+[oracle@rac1 ~]$ crs_stat -t
+
+Name           Type           Target    State     Host        
+
+------------------------------------------------------------
+
+ora.dba.db     application    ONLINE    ONLINE    rac2    
+
+
+ 
+
+[grid@rac1~]$
+
+ 
+
+检查集群节点：
+
+[grid@rac1~]$ olsnodes -n
+
+rac1      1
+
+rac-2       2
+
+检查两个节点上的Oracle TNS监听器进程：
+
+[grid@rac1~]$ ps -ef|grep lsnr|grep -v 'grep'
+
+grid      3783     1  0 12:56 ?        00:00:00 /u01/app/11.2.0/grid/bin/tnslsnr LISTENER -inherit
+
+grid      3910     1  0 12:58 ?        00:00:00 /u01/app/11.2.0/grid/bin/tnslsnr LISTENER_SCAN1 -inherit
+
+[grid@rac1~]$ ps -ef|grep lsnr|grep -v 'grep'|awk '{print $9}'
+
+LISTENER
+
+LISTENER_SCAN1
+
+[grid@rac1~]$
+
+ 
+
+确认针对Oracle Clusterware文件的Oracle ASM功能：
+
+[grid@rac1~]$ srvctl status asm  -a
+
+ASM is running on rac1,rac2
+
+ASM is enabled.
+
+ 
+
+检查Oracle集群注册表(OCR):
+
+[grid@rac1~]$ ocrcheck
+
+Status of Oracle Cluster Registry is as follows :
+
+        Version                  :          3
+
+        Total space (kbytes)     :     262120
+
+        Used space (kbytes)      :       2964
+
+        Available space (kbytes) :     259156
+
+        ID                       : 1851285791
+
+        Device/File Name         : +OCRVOTING
+
+                                    Device/File integrity check succeeded
+
+ 
+
+                                    Device/File not configured
+
+ 
+
+                                    Device/File not configured
+
+ 
+
+                                    Device/File not configured
+
+ 
+
+                                    Device/File not configured
+
+ 
+
+        Cluster registry integrity check succeeded
+
+ 
+
+        Logical corruption check bypassed due to non-privileged user
+
+ 
+
+检查表决磁盘:
+
+[grid@rac1~]$ crsctl query css votedisk
+
+##  STATE    File Universal Id                File Name Disk group
+
+--  -----    -----------------                --------- ---------
+
+ 1. ONLINE   0a64312bf16a4f71bfe1809754879085 (/dev/asm-diskb) [OCRVOTING]
+
+
+
+检查所有Oracle实例状态
+
+　　srvctl status database -d racdb
+　　srvctl config database -d racdb -a -v
+
+检查单个实例状态
+　　srvctl status instance -d spdb -i spdb1
+　　srvctl status instance -d spdb -i spdb2
+
+Located 1 voting disk(s).
+
+[grid@rac1~]$
+
+集群启动
+
+/bin/dd if=/var/tmp/.oracle/npohasd of=/dev/null bs=1024 count=1
+ansible rac -m service -a "name=iscsi state=started"
+ansible rac -m shell -a "start_udev"
+rac1，rac2  /u01/app/11.2.0/grid/bin/crsctl start cluster -all
+/u01/app/11.2.0/grid/bin/crsctl stop cluster -all
+export ORACLE_SID=racdb1
+检查
+[grid@rac1~]$ crsctl check crs
+
+
+crsd日志/u01/app/11.2.0/grid/log/rac1/crsd/crsd.log
+
+dbca不弹出
+export DISPLAY=装有xmanager工具的电脑IP：0.0
+
+
+ export ORACLE_SID=racdb1
+
+
+
+
+
+
+alter user asmsnmp identified by newhand;
+
+[root@rac1 ~]# su - oracle
+[oracle@rac1 ~]$ 
+[oracle@rac1 ~]$ 
+[oracle@rac1 ~]$  sqlplus / as sysdba
+
+SQL> conn sys/ as sysdba;
+
+[root@rac1 ~]# find /u01/app/ -name alert*.log
+
+
+节点的
+/u01/app/11.2.0/grid/log/rac1/alertrac1.log
+
+
+升级的
+/u01/app/oracle/product/11.2.0/db_1/log/diag/rdbms/dbua0/DBUA0/trace/alert_DBUA0.log
+
+
+数据库的
+/u01/app/oracle/diag/rdbms/racdb/racdb1/trace/alert_racdb1.log
+
+
+asm的
+/u01/app/grid/diag/asm/+asm/+ASM1/trace/alert_+ASM1.log
+
+
+
+
+
+SQL> shutdown immediate;  ---关闭数据库
+ 13 Database closed.
+ 14 Database dismounted.
+ 15 ORACLE instance shut down.
+ 16 SQL> startup nomount;  ----启动数据库
+ 17 ORACLE instance started.
+
+关闭顺序
+
+启动顺序
+1、查看集群的状态
+[grid@rac1 ~]$ crsctl stat res -t
+
+2、关闭数据库 数据库关闭顺序为：关闭数据库——>卸载数据库——>关闭实例
+[grid@rac1 ~]$ srvctl stop database -d racdb
+[grid@rac1 ~]$ srvctl status database -d racdb
+Instance racdb1 is not running on node rac1
+Instance racdb2 is not running on node rac2
+
+3、关闭ASM实例 ASM实例关闭顺序为：卸载磁盘——>关闭ASM实例
+[grid@rac1 ~]$ srvctl  status asm  --查看ASM状态
+ASM is running on rac2,rac1
+--停止磁盘组
+grid:asmcmd ASMCMD> lsdg
+srvctl stop diskgroup -g OCRVOTING -n rac1,rac2 
+srvctl stop diskgroup -g RACDB_DATA -n rac1,rac2
+srvctl stop diskgroup -g RACDB_FRA -n rac1,rac2
+Disk Group DATA is not running on rac1,rac2
+[grid@rac1 ~]$ srvctl status diskgroup -g FRA -n rac1,rac2--查看磁盘组状态
+Disk Group FRA is not running on rac1,rac2
+--关闭ASM实例
+[grid@rac1 ~]$ srvctl stop asm 
+[root]   /u01/app/11.2.0/grid/bin/crsctl stop crs
+--查看实例状态
+[grid@rac1 ~]$ srvctl status asm
+ASM is not running.
+[grid@rac1 ~]$ srvctl status asm -n rac1
+ASM is not running on rac1
+[grid@rac1 ~]$ srvctl status asm -n rac2
+ASM is not running on rac2
+--查看集群状态
+[grid@rac1 ~]$ crs_stat -t -v
+
+4、启动ASM实例
+ sqlplus / as sysasm
+SQL> startup
+
+5、启动数据库
+--启动数据库
+[grid@node1 ~]$ srvctl start database -d racdb
+--查看数据库状态
+[grid@node1 ~]$ srvctl status database -d racdb
+Instance racdb1 is not running on node rac1
+Instance racdb2 is not running on node rac2
+
+6、查看监听器状态
+[grid@rac1 ~]$ srvctl status listener
+Listener LISTENER is enabled
+Listener LISTENER is running on node(s): rac1,rac2
+
+7、查看集群状态
+[grid@rac1 ~]$ crs_stat -t -v
+Name           Type           R/RA   F/FT   Target    State     Host        
+----------------------------------------------------------------------
+ora....ER.lsnr ora....er.type 0/5    0/     ONLINE    ONLINE    rac1        
+ora....N1.lsnr ora....er.type 0/5    0/0    ONLINE    ONLINE    rac2        
+ora....TING.dg ora....up.type 0/5    0/     ONLINE    ONLINE    rac1        
+ora....DATA.dg ora....up.type 0/5    0/     ONLINE    ONLINE    rac1        
+ora...._FRA.dg ora....up.type 0/5    0/     ONLINE    ONLINE    rac1        
+ora.asm        ora.asm.type   0/5    0/     ONLINE    ONLINE    rac1        
+ora.eons       ora.eons.type  0/3    0/     ONLINE    ONLINE    rac1        
+ora.gsd        ora.gsd.type   0/5    0/     OFFLINE   OFFLINE               
+ora....network ora....rk.type 0/5    0/     ONLINE    ONLINE    rac1        
+ora.oc4j       ora.oc4j.type  0/5    0/0    OFFLINE   OFFLINE               
+ora.ons        ora.ons.type   0/3    0/     ONLINE    ONLINE    rac1        
+ora....SM1.asm application    0/5    0/0    ONLINE    ONLINE    rac1        
+ora....C1.lsnr application    0/5    0/0    ONLINE    ONLINE    rac1        
+ora.rac1.gsd   application    0/5    0/0    OFFLINE   OFFLINE               
+ora.rac1.ons   application    0/3    0/0    ONLINE    ONLINE    rac1        
+ora.rac1.vip   ora....t1.type 0/0    0/0    ONLINE    ONLINE    rac1        
+ora....SM2.asm application    0/5    0/0    ONLINE    ONLINE    rac2        
+ora....C2.lsnr application    0/5    0/0    ONLINE    ONLINE    rac2        
+ora.rac2.gsd   application    0/5    0/0    OFFLINE   OFFLINE               
+ora.rac2.ons   application    0/3    0/0    ONLINE    ONLINE    rac2        
+ora.rac2.vip   ora....t1.type 0/0    0/0    ONLINE    ONLINE    rac2        
+ora.racdb.db   ora....se.type 0/2    0/1    ONLINE    ONLINE    rac1        
+ora.scan1.vip  ora....ip.type 0/0    0/0    ONLINE    ONLINE    rac2 
+
+
+
+srvctl stop database -d racdb---停止所有节点上的实例 
+ /u01/app/11.2.0/grid/bin/crsctl stop cluster -all  ----停止所有节点服务  crs_stat -t -v
+/u01/app/11.2.0/grid/bin/crsctl stop has  
+ /u01/app/11.2.0/grid/bin/crsctl start res ora.crsd -init  
+以上has启动命令需要在每个节点分别执行  root
+
+

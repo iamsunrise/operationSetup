@@ -1,0 +1,9 @@
+查看当前连接的用户名： 
+foo=#select * from current_user;
+
+或
+foo=#select user;
+
+
+查看所有用户名： 
+foo=#\du

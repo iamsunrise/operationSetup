@@ -1,0 +1,137 @@
+
+ vi /etc/tgt/targets.conf
+<target iqn.2019-03.com.chusi:datadisk>
+    backing-store /dev/mapper/vg_atom2-date
+</target>
+
+tgt-admin -show
+
+
+
+yum install iscsi-initiator-utils
+
+/etc/iscsi/iscsid.conf
+node.session.auth.username = iscsiuser
+node.session.auth.password = iscsipasswd
+
+discovery.sendtargets.auth.username = isiscuser
+discovery.sendtargets.auth.password = isiscpasswd
+
+iscsiadm -m discovery -t sendtargets -p 192.168.2.117 
+
+重启tgtd服务
+
+[root@node1 ~]# /etc/init.d/tgtd restart
+Stopping SCSI target daemon:                               [  OK  ]
+Starting SCSI target daemon:  
+查看iscsi target共享存储的相关信息，使用tgt-admin --show命令
+
+启动
+ /etc/init.d/iscsi restart
+start_udev
+
+[root@node1 ~]# tgt-admin --show
+Target 1: iqn.2016-09.org.huangming:viscsidisk
+    System information:
+        Driver: iscsi
+        State: ready
+    I_T nexus information:
+    LUN information:
+        LUN: 0
+            Type: controller
+            SCSI ID: IET     00010000
+            SCSI SN: beaf10
+            Size: 0 MB, Block size: 1
+            Online: Yes
+            Removable media: No
+            Prevent removal: No
+            Readonly: No
+            Backing store type: null
+            Backing store path: None
+            Backing store flags: 
+        LUN: 1
+            Type: disk
+            SCSI ID: IET     00010001
+            SCSI SN: beaf11
+            Size: 839 MB, Block size: 512
+            Online: Yes
+            Removable media: No
+            Prevent removal: No
+            Readonly: No
+            Backing store type: rdwr
+            Backing store path: /dev/VolGroup00/iscsi00
+            Backing store flags: 
+        LUN: 2
+            Type: disk
+            SCSI ID: IET     00010002
+            SCSI SN: beaf12
+            Size: 1086 MB, Block size: 512
+            Online: Yes
+            Removable media: No
+            Prevent removal: No
+            Readonly: No
+            Backing store type: rdwr
+            Backing store path: /dev/sdb1
+            Backing store flags: 
+    Account information:
+        viscsiuser
+    ACL information:
+        10.0.0.12/24
+
+# 显示target数据
+ iscsiadm -m discovery -t sendtargets -p 192.168.2.117:3260
+ iscsiadm -m node -o delete -T iqn.2019-03.com.chusi:datadisk
+[root@node2 ~]# iscsiadm -m node
+192.168.2.117:3260,1 iqn.2019-03.com.chusi:datadisk
+# 登陆target
+[root@node2 ~]#iscsiadm -m node -T iqn.2019-03.com.chusi:datadisk --login
+
+
+
+chkconfig iscsi on
+chkconfig iscsid on
+
+vi /etc/udev/rules.d/99-oracle-asmdevices.rules
+
+scsi_id --whitelisted --replace-whitespace --device=/dev/sdb
+1IET_00010001
+scsi_id --whitelisted --replace-whitespace --device=/dev/sdc
+1IET_00010002
+scsi_id --whitelisted --replace-whitespace --device=/dev/sdd
+1IET_00010003
+scsi_id --whitelisted --replace-whitespace --device=/dev/sde
+1IET_00010004
+
+
+IET     00010001  /dev/vg_atom2/OCR
+IET     00010002  /dev/vg_atom2/OCR2
+IET     00010003  /dev/vg_atom2/VotingDisk
+IET     00010004  /dev/vg_atom2/VotingDisk2
+IET     00010005  /dev/vg_atom2/date
+IET     00010006  /dev/vg_atom2/data2
+IET     00010007  /dev/vg_atom2/flashRA
+
+
+start_udev
+fdisk -l
+vi /etc/udev/rules.d/99-oracle-asmdevices.rules
+
+
+KERNEL=="sd*", BUS=="scsi", PROGRAM=="/sbin/scsi_id --whitelisted --replace-whitespace --device=/dev/$name", RESULT=="1IET_00010001", NAME="asm-DATA1", OWNER="grid", GROUP="asmdba", MODE="0660"#每个磁盘的规则必须是在一行，不能有回车
+KERNEL=="sd*", BUS=="scsi", PROGRAM=="/sbin/scsi_id --whitelisted --replace-whitespace --device=/dev/$name", RESULT=="1IET_00010002", NAME="asm-DATA2", OWNER="grid", GROUP="asmdba", MODE="0660"
+KERNEL=="sd*", BUS=="scsi", PROGRAM=="/sbin/scsi_id --whitelisted --replace-whitespace --device=/dev/$name", RESULT=="1IET_00010003", NAME="asm-FRA", OWNER="grid", GROUP="asmdba", MODE="0660"
+KERNEL=="sd*", BUS=="scsi", PROGRAM=="/sbin/scsi_id --whitelisted --replace-whitespace --device=/dev/$name", RESULT=="1IET_00010003", NAME="asm-OCR", OWNER="grid", GROUP="asmdba", MODE="0660"
+
+
+sdb: 1073 MB  VotingDisk 1IET_00010001
+/dev/sdc: 1073 MB OCR 1IET_00010002
+/dev/sdd: 75.2 GB date 1IET_00010003
+/dev/sde: 21.5 GB flashRA 1IET_00010004
+
+IET     00010001 /dev/vg_atom2/OCR
+IET     00010002 /dev/vg_atom2/OCR2
+IET     00010003 /dev/vg_atom2/VotingDisk
+IET     00010004 /dev/vg_atom2/VotingDisk2
+IET     00010005 /dev/vg_atom2/date
+IET     00010006 /dev/vg_atom2/date2
+IET     00010007 /dev/vg_atom2/flashRA
