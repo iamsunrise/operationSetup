@@ -1,5 +1,6 @@
-ipvsadm -A -t  192.168.2.119:80 -s rr
+﻿ipvsadm -A -t  192.168.2.119:80 -s rr
 ipvsadm -a -t  192.168.2.119:80 -r 192.168.2.118:1521 -m
+ipvsadm -a -t  192.168.2.119:80 -r 192.168.2.10:1521 -m
 hadoop03 00:0c:29:a8:5f:35
 yum install ipvsadm
 删除rs
