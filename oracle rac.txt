@@ -1098,4 +1098,27 @@ srvctl stop database -d racdb---停止所有节点上的实例
  /u01/app/11.2.0/grid/bin/crsctl start res ora.crsd -init  
 以上has启动命令需要在每个节点分别执行  root
 
+ORACLE ASM
+
+执行以下命令要用grid 用户 用sqlplus / as sysasm 这个权限登录
+[grid@dm02db01 ~]$ asmcmd
+
+ASMCMD> lsdg
+
+登录
+$ export ORACLE_SID=+ASM1
+$ sqlplus / as sysasm  
+
+查看asm容量
+[grid@rac1 ~]$ export ORACLE_SID=+ASM1
+[grid@rac1 ~]$ asmcmd
+ASMCMD> lsdg
+State    Type    Rebal  Sector  Block       AU  Total_MB  Free_MB  Req_mir_free_MB  Usable_file_MB  Offline_disks  Voting_files  Name
+MOUNTED  EXTERN  N         512   4096  1048576      2048     1650                0            1650              0             N  OCRVOTING/
+MOUNTED  EXTERN  N         512   4096  1048576     40960    38842                0           38842              0             N  RACDB_DATA/
+MOUNTED  EXTERN  N         512   4096  1048576     20480    20150                0           20150              0             N  RACDB_FRA/
+ASMCMD> 
+
+
+
 
