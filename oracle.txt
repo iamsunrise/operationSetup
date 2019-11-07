@@ -60,3 +60,12 @@ create or replace trigger login_log
       where audsid = userenv('sessionid');  
    commit;  
  end;  
+
+
+正常关闭数据库流程：
+
+1、关监听
+
+2、断session   ps aux |grep "LOCAL=NO" |awk '{printf "%s\n", $2}' |xargs kill -9
+
+3、shutdown immediate
