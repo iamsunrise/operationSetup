@@ -1,0 +1,60 @@
+查看Linux的CPU信息，核数等
+# 总核数 = 物理CPU个数 X 每颗物理CPU的核数 
+# 总逻辑CPU数 = 物理CPU个数 X 每颗物理CPU的核数 X 超线程数
+
+# 查看物理CPU个数
+cat /proc/cpuinfo| grep "physical id"| sort| uniq| wc -l
+
+# 查看每个物理CPU中core的个数(即核数)
+cat /proc/cpuinfo| grep "cpu cores"| uniq
+
+# 查看逻辑CPU的个数
+cat /proc/cpuinfo| grep "processor"| wc -l
+
+查看CPU信息（型号）
+cat /proc/cpuinfo | grep name | cut -f2 -d: | uniq -c
+
+ 
+
+查看内 存信息
+# cat /proc/meminfo
+iostat -xdk 2 3
+rrqm/s：队列中每秒钟合并的读请求数量
+wrqm/s：队列中每秒钟合并的写请求数量
+r/s：每秒钟完成的读请求数量
+w/s：每秒钟完成的写请求数量
+rsec/s：每秒钟读取的扇区数量
+wsec/s：每秒钟写入的扇区数量
+avgrq-sz：平均请求扇区的大小
+avgqu-sz：平均请求队列的长度
+
+await：平均每次请求的等待时间
+vctm：平均每次请求的服务时间
+
+util：设备的利用率
+
+
+注：建议对照源代码来记忆这些参数都是如何计算出来的。
+
+关于这些参数，相对重要的是后面几个，具体来说是：util，svctm，await，avgqu-sz：
+
+util是设备的利用率。如果它接近100%，通常说明设备能力趋于饱和（并不绝对）。有时候会出现大于100%的情况，这是因为读取数据的时候是非原子操作。
+
+
+svctm是平均每次请求的服务时间。从源代码里可以看出：(r/s+w/s)*(svctm/1000)=util。举例子：如果util达到100%，那么此时svctm=1000/(r/s+w/s)，假设IOPS是1000，那么svctm大概在1毫秒左右，如果长时间大于这个数值，说明系统出了问题。
+
+
+await是平均每次请求的等待时间。这个时间包括了队列时间和服务时间，也就是说，一般情况下，await大于svctm，它们的差值越小，则说明队列时间越短，反之差值越大，队列时间越长，说明系统出了问题。
+
+
+avgqu-sz是平均请求队列的长度。毫无疑问，队列长度越短越好。
+—
+
+top 
+load avg前面三个值分别对应系统当前1分钟、5分钟、15分钟内的平均load。load用于反映当前系统的负载情况，对于16核的系统，如果每个核上cpu利用率为30%，则在不存在uninterruptible进程的情况下，系统load应该维持在4.8左右。对16核系统，如果load维持在16左右，在不存在uninterrptible进程的情况下，意味着系统CPU几乎不存在空闲状态，利用率接近于100%。结合iowait、vmstat和loadavg可以分析出系统当前的整体负载，各部分负载分布情况。
+
+查看所有cpu信息
+mpstat -P ALL 2
+
+每个进程的用量分解信息
+pidstat -u 1 -p 进程编号
