@@ -58,3 +58,5 @@ mpstat -P ALL 2
 
 每个进程的用量分解信息
 pidstat -u 1 -p 进程编号
+free -m
+pidstat -p 进程号 -r 2（进程对内存的消耗）

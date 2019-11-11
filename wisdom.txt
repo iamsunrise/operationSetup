@@ -20,7 +20,7 @@ http://holer.restclient.cn/holer/public-port.html
  使用前先安装Java，下载软件包holer-client-v1.1.zip
  修改配置文件holer-client/conf/holer.conf，添加配置项如下：
  HOLER_ACCESS_KEY=fe04521d486c4f26aa61c34eebaea30e
-fc3cb36b8b7c4b9cbe68789519e306f1
+ HOLER_ACCESS_KEY=fc3cb36b8b7c4b9cbe68789519e306f1
  HOLER_SERVER_HOST=holer.cc
 
  启动holer，打开终端进入目录holer-client/bin执行如下命令：
