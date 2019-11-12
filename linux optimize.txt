@@ -58,6 +58,7 @@ mpstat -P ALL 2
 
 每个进程的用量分解信息
 pidstat -u 1 -p 进程编号
+<<<<<<< HEAD
 
 cpu占用过高
 top pid
@@ -74,3 +75,7 @@ zombie
 
 ps -e -o stat,ppid,pid,cmd|egrep '^[Zz]'
 步骤三：果断删除 kill -9    ID
+=======
+free -m
+pidstat -p 进程号 -r 2（进程对内存的消耗）
+>>>>>>> fc45d805a07046eaa83bb25b03e25ae3bf95d5d7
