@@ -23,3 +23,18 @@ hadoop
 ./commons-io-2.4.jar
 ./htrace-core-3.0.4.jar
 ¿½±´µ½flume/libÏÂ
+
+ansible all -a "/usr/local/hadoop/sbin/start-all.sh start"
+ansible all -a "/usr/local/hadoop/sbin/stop-all.sh stop"
+ansible all -a "/usr/local/hadoop/sbin/stop-dfs.sh stop"
+ansible all -a "jps"
+ansible zookeeper -m shell -a "/usr/local/zookeeper/bin/zkServer.sh start"
+ansible all -a "/usr/local/kafka/bin/kafka-server-start.sh /usr/local/kafka/config/server.properties"
+ansible all -a "/usr/local/kafka/bin/kafka-server-stop.sh /usr/local/kafka/config/server.properties"
+ansible all -m shell -a "export JMX_PORT=9988 && /usr/local/kafka/bin/kafka-server-start.sh -daemon /usr/local/kafka/config/server.properties" 
+ansible all -a "/usr/local/kafka/bin/kafka-server-stop.sh stop"
+nohup /usr/local/kafka-manager/bin/kafka-manager   -Dhttp.port=7456 >/usr/local/kafka/start.log 2>&1 &
+
+
+
+

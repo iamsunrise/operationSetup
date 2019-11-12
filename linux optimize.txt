@@ -58,3 +58,19 @@ mpstat -P ALL 2
 
 每个进程的用量分解信息
 pidstat -u 1 -p 进程编号
+
+cpu占用过高
+top pid
+ps -fe|grep pid
+ps -mp pid -o THREAD,tid,time
+printf “%x\n” tid (转为16进制)
+jstack pid |grep tid -A 30
+
+
+
+zombie
+步骤一：top   命令分析查看
+步骤二：ps  查看僵尸进程的具体信息
+
+ps -e -o stat,ppid,pid,cmd|egrep '^[Zz]'
+步骤三：果断删除 kill -9    ID
