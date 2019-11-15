@@ -1,0 +1,8 @@
+gettext
+./configure --prefix=/usr --libdir=/usr/lib64 --sysconfdir=/etc
+
+
+./configure --enable-kvm --enable-debug --enable-vnc --enable-werror  --target-list="x86_64-softmmu"
+
+
+../gcc-4.9.0/configure --prefix=/usr/local/gcc  --enable-bootstrap  --enable-checking=release --enable-languages=c,c++ --disable-multilib
