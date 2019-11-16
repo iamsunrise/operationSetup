@@ -5,3 +5,25 @@ ansible all -a "/usr/local/hadoop/sbin/start-all.sh start"
 nohup /usr/local/kafka-manager/bin/kafka-manager   -Dhttp.port=7456 >/usr/local/kafka/start.log 2>&1 &
 /usr/local/kafka/bin/kafka-producer-perf-test.sh  --topic test --record-size 100 --num-records 100000 --throughput 1000 --producer-props bootstrap.servers=192.168.0.131:9092,192.168.0.132:9092,192.168.0.133:9092
 
+netstat -tunlp|grep 9092
+1.创建Topic
+
+　　1）运行命令： 
+/usr/local/kafka/bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic test1
+    2.查看Topic
+/usr/local/kafka/bin/kafka-topics.sh --list --zookeeper localhost:2181
+
+3.用Kafka的console-producer在topic test1 生产消息
+
+　　新建终端窗口，到/Applications/kafka目录，运行命令：/usr/local/kafka/bin/kafka-console-producer.sh --broker-list localhost:9092 --topic test1
+
+　　然后输入想要产生的消息内容（如 hello world），回车：
+
+　　　　
+
+4.用Kafka的console-consumer 消费topic test1的消息
+
+　　新建终端窗口，到/Applications/kafka目录，
+
+　　运行命令：/usr/local/kafka/bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic test1 --from-beginning
+　　（9092是kafka单机启动的端口；--bootstrap-server   新旧kafka版本不一样，这个是新版本的命令）
