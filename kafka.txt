@@ -27,3 +27,6 @@ netstat -tunlp|grep 9092
 
 　　运行命令：/usr/local/kafka/bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic test1 --from-beginning
 　　（9092是kafka单机启动的端口；--bootstrap-server   新旧kafka版本不一样，这个是新版本的命令）
+
+
+/usr/local/kafka/bin/kafka-topics.sh --zookeeper 127.0.0.1:2181 --list
