@@ -1,0 +1,20 @@
+hadoop ha:
+启动顺序
+1.启动zk
+2./usr/local/hadoop/sbin/hadoop-daemons.sh start journalnode
+/usr/local/hadoop/sbin/hadoop-daemons.sh stop journalnode
+3.挑选一台namenode初始化并启动
+hdfs namenode -format
+/usr/local/hadoop/sbin/hadoop-daemon.sh start namenode
+/usr/local/hadoop/sbin/hadoop-daemon.sh stop namenode
+4.在另一台namenode上拉取元数据
+hdfs namenode -bootstrapStandby
+5.格式化zkfc
+hdfs zkfc -format
+6.启动
+start-dfs.sh
+7.测试
+对应进程
+web ui
+读写文件
+关闭一个namenode，查看是否能自动切换
