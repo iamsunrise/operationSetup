@@ -35,6 +35,8 @@ ansible all -m shell -a "export JMX_PORT=9988 && /usr/local/kafka/bin/kafka-serv
 ansible all -a "/usr/local/kafka/bin/kafka-server-stop.sh stop"
 nohup /usr/local/kafka-manager/bin/kafka-manager   -Dhttp.port=7456 >/usr/local/kafka/start.log 2>&1 &
 
+ansible all -m copy -a "usr=/usr/local/hadoop/etc/hadoop/core-site.xml dest=/usr/local/hadoop/etc/hadoop/"
+ansible all -m copy -a "usr=/usr/local/hadoop/etc/hadoop/hdfs-site.xml dest=/usr/local/hadoop/etc/hadoop/"
 
 
 
