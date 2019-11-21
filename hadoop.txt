@@ -10,7 +10,6 @@ hdfs namenode -format
 4.在另一台namenode上拉取元数据
 hdfs namenode -bootstrapStandby
 5.格式化zkfc
-hdfs zkfc -format
 hdfs zkfc -formatZK
 6.启动
 /usr/local/hadoop/sbin/start-dfs.sh

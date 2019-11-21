@@ -38,5 +38,46 @@ Domain convirt has been undefined
 然后在执行virt-install安装就不会报错了。
 
 
+Start the Compute service including its dependencies and configure them to start automatically when the system boots:
+
+# systemctl enable libvirtd.service openstack-nova-compute.service
+# systemctl start libvirtd.service openstack-nova-compute.service
+
+systemctl stop libvirtd.service openstack-nova-compute.service
+systemctl stop memcached
+systemctl stop httpd.service
+systemctl stop libvirtd.service
+systemctl stop openstack-glance-api.service
+systemctl stop openstack-nova-api.service
+systemctl stop openstack-glance-registry.service
+systemctl stop openstack-neutron-dhcp-ag.service
+systemctl stop openstack-neutron-metadat.service
+systemctl stop neutron-server.service
 
 
+停服务
+
+停止所有计算节点 nova-compute 服务
+
+systemctl stop openstack-nova-compute.service
+
+停止控制节点服务
+
+systemctl stop openstack-nova-api.service
+systemctl stop openstack-nova-conductor.service
+systemctl stop openstack-nova-scheduler.service
+systemctl stop openstack-nova-novncproxy.service
+systemctl stop openstack-nova-consoleauth.service
+
+使用ansible升级Nova组件及修改配置根据自己实际环境书写playbook同步最新数据库结构openstack-db --service nova --updatenova-manage api_db sync
+
+在 Mitaka 版本中新增nova_api数据库，所以要同步api_db
+启动并检查服务状态
+启动控制节点
+systemctl start openstack-nova-conductor.service
+systemctl start openstack-nova-scheduler.service
+systemctl start openstack-nova-api.service
+systemctl start openstack-nova-novncproxy.service
+systemctl start openstack-nova-consoleauth.service
+
+启动计算节点systemctl start openstack-nova-compute.service

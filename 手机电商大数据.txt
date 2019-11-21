@@ -39,6 +39,6 @@ ansible all -m copy -a "src=/usr/local/hadoop/etc/hadoop/yarn-site.xml dest=/usr
 ansible all -m copy -a "usr=/usr/local/hadoop/etc/hadoop/core-site.xml dest=/usr/local/hadoop/etc/hadoop/"
 ansible all -m copy -a "usr=/usr/local/hadoop/etc/hadoop/hdfs-site.xml dest=/usr/local/hadoop/etc/hadoop/"
 ansible flume -a "/usr/local/flume/bin/flume-ng agent --name a1 --conf-file /usr/local/flume/conf/file-flume-kafka.conf &"
+/usr/local/flume/bin/flume-ng agent --name a1 --conf-file /usr/local/flume/conf/file-flume-kafka.conf &
 
-
-
+java -classpath /home/work/bigdata/log-collector-1.0-SNAPSHOT-jar-with-dependencies.jar com.atguigu.appclient.AppMain>/tmp/bigdata/test.log
