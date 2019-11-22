@@ -26,6 +26,7 @@ hadoop
 
 ansible all -a "/usr/local/hadoop/sbin/start-all.sh start"
 ansible all -a "/usr/local/hadoop/sbin/stop-all.sh stop"
+ansible all -a "/usr/local/hadoop/sbin/start-dfs.sh"
 ansible all -a "/usr/local/hadoop/sbin/stop-dfs.sh stop"
 ansible all -a "jps"
 ansible zookeeper -m shell -a "/usr/local/zookeeper/bin/zkServer.sh start"
@@ -36,9 +37,12 @@ ansible all -a "/usr/local/kafka/bin/kafka-server-stop.sh stop"
 nohup /usr/local/kafka-manager/bin/kafka-manager   -Dhttp.port=7456 >/usr/local/kafka/start.log 2>&1 &
 ansible all -m copy -a "src=/usr/local/hadoop/etc/hadoop/yarn-site.xml dest=/usr/local/hadoop/etc/hadoop/"
 
-ansible all -m copy -a "usr=/usr/local/hadoop/etc/hadoop/core-site.xml dest=/usr/local/hadoop/etc/hadoop/"
-ansible all -m copy -a "usr=/usr/local/hadoop/etc/hadoop/hdfs-site.xml dest=/usr/local/hadoop/etc/hadoop/"
+ansible all -m copy -a "src=/usr/local/hadoop/etc/hadoop/core-site.xml dest=/usr/local/hadoop/etc/hadoop/"
+ansible all -m copy -a "src=/usr/local/hadoop/etc/hadoop/hdfs-site.xml dest=/usr/local/hadoop/etc/hadoop/"
 ansible flume -a "/usr/local/flume/bin/flume-ng agent --name a1 --conf-file /usr/local/flume/conf/file-flume-kafka.conf &"
 /usr/local/flume/bin/flume-ng agent --name a1 --conf-file /usr/local/flume/conf/file-flume-kafka.conf &
 
-java -classpath /home/work/bigdata/log-collector-1.0-SNAPSHOT-jar-with-dependencies.jar com.atguigu.appclient.AppMain>/tmp/bigdata/test.log
+java -classpath /home/work/project/appEcommerce/log-collector-1.0-SNAPSHOT-jar-with-dependencies.jar com.atguigu.appclient.AppMain>/tmp/bigdata/test.log
+hadoop÷ß≥÷lzo
+ansible all -m copy -a "src=/home/work/tools/hadoop-lzo-0.4.20.jar dest=/usr/local/hadoop/share/hadoop/common/"
+ansible all -m copy -a "src=/usr/local/hadoop/etc/hadoop/core-site.xml dest=/usr/local/hadoop/etc/hadoop/"
