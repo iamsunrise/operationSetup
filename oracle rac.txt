@@ -1014,6 +1014,7 @@ SQL> shutdown immediate;  ---关闭数据库
 启动顺序
 1、查看集群的状态
 [grid@rac1 ~]$ crsctl stat res -t
+               crsctl stat res -t -init
 
 2、关闭数据库 数据库关闭顺序为：关闭数据库——>卸载数据库——>关闭实例
 [grid@rac1 ~]$ srvctl stop database -d racdb
@@ -1050,6 +1051,12 @@ ASM is not running on rac2
 SQL> startup
 
 5、启动数据库
+ service iscsi start
+ start_udev
+集群启动
+/u01/app/11.2.0/grid/bin/crsctl start cluster -all
+/u01/app/11.2.0/grid/bin/crsctl check cluster -all
+crsctl stat res -t -init
 --启动数据库
 [grid@node1 ~]$ srvctl start database -d racdb
 --查看数据库状态
@@ -1119,6 +1126,48 @@ MOUNTED  EXTERN  N         512   4096  1048576     40960    38842               
 MOUNTED  EXTERN  N         512   4096  1048576     20480    20150                0           20150              0             N  RACDB_FRA/
 ASMCMD> 
 
+check crs的时候只出现crs-4535的错误，解决步骤：
+
+这个问题一般是由crsd进程死掉或者ocr磁盘组状态不对引起的。
+
+1.查看磁盘组所属组(chown)和权限(chmod)是否正确
+
+2.查看crsd的进程是否存在或者正确
+
+ps -ef | grep crsd.bin
+
+crsctl stat res -t -init  查看ora.crsd的状态是否为online
+
+3.一般到这一步其实ora.crsd的状态是offline的，所以需要去检查一下grid 下的$ORACLE_HOME/log/hostname/crsd/crsd.log日志的输出，看是否存在异常
+
+4.检查asm磁盘组的状态
+
+select name,state from v$asm_diskgroup;想对应的ocr磁盘组的状态
+
+5.在所有都检查完毕后没有问题，就启动crsd进程
+
+crsctl start res ora.crsd -init 
+
+归档模式
+select name,log_mode from v$database;
+　　1.改变非归档模式到归档模式:
+ 　　1)SQL> conn / as sysdba (以DBA身份连接数据库)
+ 　　2)SQL> shutdown immediate; (立即关闭数据库)
+ 　　3)SQL> startup mount (启动实例并加载数据库，但不打开)
+ 　　4)SQL> alter database archivelog; (更改数据库为归档模式)
+ 　　5)SQL> alter database open; (打开数据库)
+ 　　6)SQL> alter system archive log start; (启用自动归档)
+ 　　7)SQL> exit (退出)
 
 
+　　做一次完全备份,因为非归档日志模式下产生的备份日志对于归档模式已经不可用了.这一步非非常重要!
 
+　　2.改变归档模式到非归档模式:
+
+　　1)SQL>SHUTDOWN NORMAL/IMMEDIATE;
+　　2)SQL>STARTUP MOUNT;
+　　3)SQL>ALTER DATABASE NOARCHIVELOG;
+　　4)SQL>ALTER DATABASE OPEN;
+　　3.启用自动归档: LOG_ARCHIVE_START=TRUE
+
+ 
