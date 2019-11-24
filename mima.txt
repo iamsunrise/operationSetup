@@ -1,0 +1,8 @@
+gitlab
+admin
+211
+mysql -uroot -h127.0.0.1 -p -S /var/lib/mysql/mysql.sock 
+n**********d
+/database/mysql/bin/mysqld_safe 
+mysql -S /tmp/mysql.sock -P 3307
+

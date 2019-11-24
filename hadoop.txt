@@ -10,11 +10,23 @@ hdfs namenode -format
 4.在另一台namenode上拉取元数据
 hdfs namenode -bootstrapStandby
 5.格式化zkfc
-hdfs zkfc -format
+hdfs zkfc -formatZK
 6.启动
-start-dfs.sh
+/usr/local/hadoop/sbin/start-dfs.sh
 7.测试
 对应进程
 web ui
 读写文件
 关闭一个namenode，查看是否能自动切换
+
+
+
+重新格式化HDFS
+将 dfs.name.dir所指定的目录删除、dfs.data.dir所指定的目录删除
+ansible-playbook /home/work/yml/delDom.yaml
+
+ansible all -a "/usr/local/hadoop/sbin/stop-all.sh"
+ansible all -m copy -a "usr=/usr/local/hadoop/etc/hadoop/core-site.xml dest=/usr/local/hadoop/etc/hadoop/"
+ansible all -m copy -a "usr=/usr/local/hadoop/etc/hadoop/hdfs-site.xml dest=/usr/local/hadoop/etc/hadoop/"
+
+
