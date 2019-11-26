@@ -40,9 +40,44 @@ ansible all -m copy -a "src=/usr/local/hadoop/etc/hadoop/yarn-site.xml dest=/usr
 ansible all -m copy -a "src=/usr/local/hadoop/etc/hadoop/core-site.xml dest=/usr/local/hadoop/etc/hadoop/"
 ansible all -m copy -a "src=/usr/local/hadoop/etc/hadoop/hdfs-site.xml dest=/usr/local/hadoop/etc/hadoop/"
 ansible flume -a "/usr/local/flume/bin/flume-ng agent --name a1 --conf-file /usr/local/flume/conf/file-flume-kafka.conf &"
+生产
 /usr/local/flume/bin/flume-ng agent --name a1 --conf-file /usr/local/flume/conf/file-flume-kafka.conf &
-
+消费
+/usr/local/flume/bin/flume-ng agent --name a1 --conf-file /usr/local/flume/conf/kafka-flume-hdfs.conf &
 java -classpath /home/work/project/appEcommerce/log-collector-1.0-SNAPSHOT-jar-with-dependencies.jar com.atguigu.appclient.AppMain>/tmp/bigdata/test.log
 hadoop支持lzo
 ansible all -m copy -a "src=/home/work/tools/hadoop-lzo-0.4.20.jar dest=/usr/local/hadoop/share/hadoop/common/"
 ansible all -m copy -a "src=/usr/local/hadoop/etc/hadoop/core-site.xml dest=/usr/local/hadoop/etc/hadoop/"
+
+
+
+
+CREATE TABLE lzo (
+ip STRING
+)INPUTFORMAT"com.hadoop.mapred.DeprecatedLzoTextInputFormat"
+
+OUTPUTFORMAT \"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat";
+
+
+
+CREATE TABLE lzo (
+ip STRING,
+user STRING,
+time STRING,
+request STRING,
+status STRING,
+size STRING,
+rt STRING,
+referer STRING,
+agent STRING,
+forwarded String
+)
+partitioned by (
+date string,
+host string
+)
+row format delimited
+fields terminated by '\t'
+STORED AS INPUTFORMAT "com.hadoop.mapred.DeprecatedLzoTextInputFormat"
+OUTPUTFORMAT "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat";
+
