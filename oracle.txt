@@ -69,3 +69,12 @@ create or replace trigger login_log
 2°¢∂œsession   ps aux |grep "LOCAL=NO" |awk '{printf "%s\n", $2}' |xargs kill -9
 
 3°¢shutdown immediate
+
+
+
+
+
+redo»’÷æ
+
+select * from v$log;
+select group#,member from v$logfile;
