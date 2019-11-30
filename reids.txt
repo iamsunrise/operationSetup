@@ -1,0 +1,1 @@
+ansible redis -a "/usr/local/redis/bin/redis-server /usr/local/redis/conf/redis.conf"
