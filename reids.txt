@@ -1,7 +1,7 @@
 ansible redis -a "/usr/local/redis/bin/redis-server /usr/local/redis/conf/redis.conf"
-/usr/local/redis/bin/redis-trib.rb create --replicas 1  192.168.2.116:6379 192.168.2.117:6379 192.168.2.118:6379 192.168.2.119:6379
+/usr/local/redis/bin/redis-trib.rb create --replicas 1  192.168.2.116:6379 192.168.2.117:6379  192.168.2.119:6379
 
-
+/usr/local/redis/bin/redis-trib.rb create --replicas 1 192.168.2.116:9001 192.168.2.116:9002 192.168.2.116:9003 192.168.2.116:9004 192.168.2.116:9005 1192.168.2.116:9006
 
 bash: /usr/local/bin/rar: /lib/ld-linux.so.2: bad ELF interpreter: No such file or directory
 是因为64位系统中安装了32位程序
@@ -14,4 +14,66 @@ gem sources -r http://rubygems.org/
 gem sources -a https://ruby.taobao.org/
 gem install  redis --version 3.0.0
 
+
+报错信息如下：
+
+./redis-trib.rb:885:in 'sort!' : undefined method '<=>' for:m: symbol (NoMethodError)
+
+或者报这个错：
+
+ERROR:  Error installing redis redis requires Ruby version >= 2.2.2.
+
+
+
+解决方法：安装2.2以上的ruby，以及相应版本的redis.gem
+
+具体步骤如下：
+
+3.1 安装CURL
+RVM需要通过CRUL来进行下载，那么我们要先下载CUEL，CURL是什么呢，它是Linux下的文件传输工具，利用URL的规则在命令行下工作，输入命令 " yum install curl " 进行安装
+
+3.2 使用CURL安装RVM
+curl -L get.rvm.io | bash -s stable
+
+如果出现下图的提示信息：则需要关闭防火墙，或者放行80端口，然后再执行上述的命令
+
+关闭防火墙：service iptables stop
+
+放行80端口：-A INPUT -m state --state NEW -m tcp -p tcp --dport 80 -j ACCEPT
+
+
+
+指定 recv-keys 就可以了输入命令 “ gpg2 --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3 ” 再进行安装就可以了，由于博主已经安装好，不太方便复现，下图是博主从网上找的
+
+
+
+3.3 自定义路径
+source /usr/local/rvm/scripts/rvm
+
+通过rvm list known命令可以知道rvm中管理的所有ruby版本，如下图所示：
+
+
+
+3.4 安装rvm
+选择一个想要的版本进行安装
+
+rvm install 2.3.5
+
+使用刚刚安装的版本
+
+rvm use 2.3.5
+
+移除系统默认版本
+
+rvm remove 1.8.7
+
+查看使用的ruby版本信息
+
+ruby -v
+
+
+
+然后就可以安装gem了
+
+gem install redis
 
