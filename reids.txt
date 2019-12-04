@@ -1,7 +1,17 @@
 ansible redis -a "/usr/local/redis/bin/redis-server /usr/local/redis/conf/redis.conf"
 /usr/local/redis/bin/redis-trib.rb create --replicas 1  192.168.2.116:6379 192.168.2.117:6379  192.168.2.119:6379
+/usr/local/redis/bin/redis-server /usr/local/redis/conf/9001.conf
+/usr/local/redis/bin/redis-server /usr/local/redis/conf/9002.conf
+/usr/local/redis/bin/redis-server /usr/local/redis/conf/9003.conf 
+/usr/local/redis/bin/redis-server /usr/local/redis/conf/9004.conf
+/usr/local/redis/bin/redis-server /usr/local/redis/conf/9005.conf
+/usr/local/redis/bin/redis-server /usr/local/redis/conf/9006.conf
+
 
 /usr/local/redis/bin/redis-trib.rb create --replicas 1 192.168.2.116:9001 192.168.2.116:9002 192.168.2.116:9003 192.168.2.116:9004 192.168.2.116:9005 1192.168.2.116:9006
+
+/usr/local/redis/bin/redis-benchmark -h 192.168.2.116 -p 9001 -q -n 100000
+
 
 bash: /usr/local/bin/rar: /lib/ld-linux.so.2: bad ELF interpreter: No such file or directory
 是因为64位系统中安装了32位程序

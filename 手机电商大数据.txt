@@ -1,4 +1,4 @@
-java -classpath log-collector-1.0-SNAPSHOT-jar-with-dependencies.jar com.atguigu.appclient.AppMain > /tmp/test.log
+java -classpath /home/work/project/appEcommerce/log-collector-1.0-SNAPSHOT-jar-with-dependencies.jar com.atguigu.appclient.AppMain > /tmp/test.log
 
 ansible all -a "java -classpath log-collector-1.0-SNAPSHOT-jar-with-dependencies.jar com.atguigu.appclient.AppMain 1 1000> /tmp/test.log"
 
