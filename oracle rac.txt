@@ -1170,4 +1170,4 @@ select name,log_mode from v$database;
 ¡¡¡¡4)SQL>ALTER DATABASE OPEN;
 ¡¡¡¡3.ÆôÓÃ×Ô¶¯¹éµµ: LOG_ARCHIVE_START=TRUE
 
- 
+ select name,state from v$asm_diskgroup;

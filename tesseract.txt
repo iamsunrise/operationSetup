@@ -1,0 +1,24 @@
+tar xvzf leptonica-1.74.4.tar.gz
+cd leptonica-1.74.4
+ls
+./configure 
+make
+make install
+echo $?
+cd ..
+unzip 4.00.00dev 
+cd tesseract-4.00.00dev/
+ls
+
+/usr/bin/aclocal
+
+autoconf
+yum install libtool  
+./autogen.sh
+
+
+
+
+error: possibly undefined macro: AC_PROG_LIBTOOL
+please use m4_pattern_allow.
+yum install libtool  
