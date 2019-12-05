@@ -22,3 +22,9 @@ yum install libtool
 error: possibly undefined macro: AC_PROG_LIBTOOL
 please use m4_pattern_allow.
 yum install libtool  
+
+
+
+
+
+https://www.cnblogs.com/snakeskin/p/11296631.html
