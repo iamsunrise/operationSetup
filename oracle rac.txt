@@ -586,7 +586,7 @@ rac1 LISTENER_rac1
 
 查看数据库状态
 
-[13:08:40oracle@rac2~]srvctl  status database -d dba 
+[13:08:40oracle@rac2~]srvctl  status database -d racdb
 
 Instance null1 is running on node rac1
 
@@ -594,7 +594,7 @@ Instance null2 is running on node rac2
 
  
 
-[13:08:43oracle@rac2~]srvctl  status database -d dba -v
+[13:08:43oracle@rac2~]srvctl  status database -d racdb -v
 
 Instance null1 is running on node rac1 with online services rac name 
 
@@ -1171,3 +1171,132 @@ select name,log_mode from v$database;
 　　3.启用自动归档: LOG_ARCHIVE_START=TRUE
 
  select name,state from v$asm_diskgroup;
+
+
+
+ 关闭过程（CRS集群关闭－>关闭数据库）
+1.关闭数据库：
+ 用oracl用户执行srvctl命令
+ 语法：srvctl stop database -d dbname ［-o immediate］
+ 作用：可以一次性关闭dbname的所有实例
+[Oracle@rac1 ~]$ srvctl stop database -d racdb  -停止所有节点上的实例
+ 然后查看状态：
+[oracle@rac1 ~]$ srvctl status database -d racdb   
+ Instance rac1 is not running on node rac1
+ Instance rac2 is not running on node race
+ 2.停止HAS(High Availability Services)，必须以root用户操作
+[root@rac1 oracle]# cd /u01/grid/11.2.0/grid/bin
+ [root@rac1 bin]# ./crsctl stop has -f
+ [root@rac1 bin]# ./crsctl stop crs -f
+本命令只能关闭当前节点的CRS服务，因此需要在RAC的所有节点上执行，启动也一样。has与crs等同
+3.停止节点集群服务，必须以root用户：
+[root@rac1 oracle]# cd /u01/grid/11.2.0/grid/bin
+ [root@rac1 bin]# ./crsctl stop cluster        ----停止本节点集群服务
+ [root@rac1 bin]# ./crsctl stop cluster -all  ---停止所有节点服务
+ 也可以如下控制所停节点：
+[root@rac1 bin]# crsctl stop cluster -n rac1 rac2
+ CRS-2677: Stop of 'ora.cssd' on 'rac1' succeeded
+ CRS-2677: Stop of 'ora.cssd' on 'rac2' succeeded
+。。。。。。。。。。。省略日志输出。。。。。。。。。。。。。。
+ 你如果想一条命令把所有的进程全部停止可以使用上述命令。如果不指定参数的话对当前节点有效，如果指定参数的话对相关参数节点有效。
+4.检查集群进程状态
+[root@rac1 bin]# crsctl check cluster
+详细输出
+[root@rac1 bin]# crs_stat -t -v
+只检查本节点的集群状态
+[root@rac1 bin]# crsctl check crs
+
+启动过程（CRS集群启动－>启动数据库）
+1.启动HAS
+单一节点启动
+[root@rac2 ~]# crsctl start has
+ [root@rac2 ~]# crsctl start crs
+ [root@rac2 ~]# crsctl check crs
+ CRS-4638: Oracle High Availability Services is online
+ CRS-4537: Cluster Ready Services is online
+ CRS-4529: Cluster Synchronization Services is online
+ CRS-4533: Event Manager is online
+所有节点启动
+[root@rac1 bin]# crsctl start cluster -n rac1 rac2
+ CRS-4123: Oracle High Availability Services has been started.
+ [root@rac1 bin]# crsctl start cluster -all
+ [root@rac2 ~]# crsctl check cluster
+ CRS-4537: Cluster Ready Services is online
+ CRS-4529: Cluster Synchronization Services is online
+ CRS-4533: Event Manager is online
+此命令会在后台启动所有RAC CRS相关进程
+[root@rac2 ~]# crs_stat -t -v
+ CRS-0184: Cannot communicate with the CRS daemon.
+因为start has启动的crs进程比较多因此会启动的比较慢，我的机器等待了5分钟，在没有完全启动成功之前会报上述错误，需要耐心等待一段时间后执行下面命令即可查看到所有CRS相关进程服务已经启动。
+[root@rac2 ~]# crs_stat -t -v
+ Name          Type          R/RA  F/FT  Target    State    Host       
+ ----------------------------------------------------------------------
+ ora.DATA.dg    ora....up.type 0/5    0/    ONLINE    ONLINE    rac1       
+ ora....ER.lsnr ora....er.type 0/5    0/    ONLINE    ONLINE    rac1       
+ ora....N1.lsnr ora....er.type 0/5    0/0    ONLINE    ONLINE    rac2       
+ ora....N2.lsnr ora....er.type 0/5    0/0    ONLINE    ONLINE    rac1       
+ ora....N3.lsnr ora....er.type 0/5    0/0    ONLINE    ONLINE    rac1       
+ ora.asm        ora.asm.type  0/5    0/    ONLINE    ONLINE    rac1       
+ ora.cvu        ora.cvu.type  0/5    0/0    ONLINE    ONLINE    rac1       
+ ora.gsd        ora.gsd.type  0/5    0/    OFFLINE  OFFLINE             
+ ora....network ora....rk.type 0/5    0/    ONLINE    ONLINE    rac1       
+ ora.oc4j      ora.oc4j.type  0/1    0/2    ONLINE    ONLINE    rac1       
+ ora.ons        ora.ons.type  0/3    0/    ONLINE    ONLINE    rac1       
+ ora....SM1.asm application    0/5    0/0    ONLINE    ONLINE    rac1       
+ ora....C1.lsnr application    0/5    0/0    ONLINE    ONLINE    rac1       
+ ora.rac1.gsd  application    0/5    0/0    OFFLINE  OFFLINE             
+ ora.rac1.ons  application    0/3    0/0    ONLINE    ONLINE    rac1       
+ ora.rac1.vip  ora....t1.type 0/0    0/0    ONLINE    ONLINE    rac1       
+ ora....SM2.asm application    0/5    0/0    ONLINE    ONLINE    rac2       
+ ora....C2.lsnr application    0/5    0/0    ONLINE    ONLINE    rac2       
+ ora.rac2.gsd  application    0/5    0/0    OFFLINE  OFFLINE             
+ ora.rac2.ons  application    0/3    0/0    ONLINE    ONLINE    rac2       
+ ora.rac2.vip  ora....t1.type 0/0    0/0    ONLINE    ONLINE    rac2       
+ ora....ry.acfs ora....fs.type 0/5    0/    ONLINE    ONLINE    rac1       
+ ora.scan1.vip  ora....ip.type 0/0    0/0    ONLINE    ONLINE    rac2       
+ ora.scan2.vip  ora....ip.type 0/0    0/0    ONLINE    ONLINE    rac1       
+ ora.scan3.vip  ora....ip.type 0/0    0/0    ONLINE    ONLINE    rac1
+说明：
+ 英文解释
+ora.gsd is OFFLINE by default ifthere is no 9i database in the cluster.
+ ora.oc4j is OFFLINE in 11.2.0.1 as DatabaseWorkload Management(DBWLM) is unavailable.  these can be ignored in11gR2 RAC.
+中文解释
+ora.gsd是集群服务中用于与9i数据库进行通信的一个进程，在当前版本中为了向后兼容才保存下来，状态为OFFLINE不影响CRS的正常运行与性能，我们忽略即可
+ora.oc4j是在11.2.0.2以上版本中有效的服务进程，用于DBWLM的资源管理，因此在11.2.0.1以下版本并没有使用
+2.启动数据库：
+oracl用户执行srvctl命令：
+ 语法：srvctl start|stop|status database -d dbname ［-o immediate］
+ 作用：可以一次性启动dbname的所有实例
+[oracle@rac1 ~]$ srvctl start database -d racdb  -启动所有节点上的实例
+ 然后查看状态：
+[oracle@rac1 ~]$ srvctl status database -d racdb 
+ 3.详细输出资源全名称并检查状态
+crsctl status resource -t
+ crsctl status resource
+ 4.常用srvctl命令
+ 指定dbname上某个实例
+srvctl start|stop|status instance -d <dbname> -i <instance_name>
+ 5.显示RAC下所有实例配置与状态
+srvctl status|config database -d <dbname>
+ 6.显示所有节点的应用服务（VIP，GSD，listener，ONS）
+srvctl start|stop|status nodeapps -n<node_name>
+ 7.ASM进程服务管理
+srvctl start|stop|status|config asm -n <nodename>[-i <asm_inst_name>] [-o<oracle_home>]
+ srvctl config asm -a
+ srvctl status asm -a
+ 6.可以获取所有的环境信息：
+srvctl getenv database -d <dbname> [-i<instance_name>]
+ 7.设置全局环境和变量：
+srvctl setenv database -d<dbname> -t LANG=en
+ 8.在OCR中删除已有的数据库信息
+srvctl remove database -d <dbname>
+ 9.向OCR中添加一个数据库的实例：
+srvctl add instance -d <dbname> -i<instance_name> -n <node1>
+ srvctl add instance -d <dbname> -i<instance_name> -n <node2>
+ 10.检查监听的状态
+srvctl status listener
+ srvctl config listener -a
+ SCAN配置信息
+srvctl config scan
+ SCAN listener状态信息
+srvctl status scan
