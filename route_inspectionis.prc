@@ -1,5 +1,4 @@
-create or replace procedure route_inspection is
-begin
+
   --Êý¾Ý¿â×´Ì¬
     select v$instance.STATUS,
     v$instance.INSTANCE_NAME,
@@ -448,5 +447,5 @@ select rownum,t.* from (select owner,sum(bytes)/1024/1024  as bytes_in_M  from d
    
   prompt 
  */ 
-end route_inspection;
+
 /

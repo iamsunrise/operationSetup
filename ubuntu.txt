@@ -1,0 +1,6 @@
+１）将列出所有来源的版本
+
+apt-cache madison <<package name>>
+２）信息会比上面详细一点
+
+apt-cache policy <<package name>>

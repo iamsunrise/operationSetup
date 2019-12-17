@@ -81,3 +81,4 @@ fields terminated by '\t'
 STORED AS INPUTFORMAT "com.hadoop.mapred.DeprecatedLzoTextInputFormat"
 OUTPUTFORMAT "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat";
 
+load data inpath '/origin_data/gmall/log/topic_event/2019-12-09' into table gmall.ods_event_log partition(dt='2019-12-09');

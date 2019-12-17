@@ -22,3 +22,10 @@ lrwxrwxrwx 1 root root   17 1月  15 12:31 docbook2x-texi -> db2x_docbook2texi
            // 配置安装路径
 # make all doc info                    // 编译
 # make install install-doc install-html install-info   // 安装
+
+
+git reset -hard HEAD或git checkout -f
+git commit -amend
+
+git rebase -i orgin/master
+git log --oneline --graph
