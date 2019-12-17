@@ -1,0 +1,57 @@
+./configure --with-features=huge --enable-python3interp --enable-pythoninterp --with-python-config-dir=/usr/lib/python2.7/config/ --enable-rubyinterp --enable-luainterp --enable-perlinterp --with-python3-config-dir=/usr/lib/python3.5/co/ --enable-multibyte --enable-cscope  --prefix=/usr/local/vim8/
+
+
+ ./configure --with-features=huge --enable-multibyte --enable-rubyinterp=yes --enable-pythoninterp=yes --with-python-config-dir=/usr/local/lib/python2.7/config --enable-python3interp=yes --with-python3-config-dir=/usr/local/python-3.5.3/lib/python3.5/config --enable-perlinterp=yes --enable-luainterp=yes --enable-gui=gtk2 --enable-cscope --prefix=/usr/local/vim-8.0
+
+./configure --with-features=hugeinterp=yes --enable-pythoninterp=yes --with-python-config-dir=/usr/local/lib/python2.7/config --enable-python3interp=yes --with-python3-config-dir=/usr/local/lib/python3.6/config-3.6m-x86_64-linux-gnu/ --enable-perlinterp=yes --enable-luainterp=yes --enable-gui=gtk2 --enable-cscope --prefix=/usr/local/vim-8.1
+
+
+make VIMRUNTIMEDIR=/usr/local/vim-8.0/share/vim/vim80
+make install
+
+
+/usr/bin/perl /usr/share/perl5/ExtUtils/xsubpp -prototypes -typemap /usr/share/perl5/ExtUtils/typemap if_perl.xs >> auto/if_perl.c
+
+
+wget https://github.com/git/git/archive/v2.2.1.tar.gz
+tar zxvf v2.2.1.tar.gz
+cd git-2.2.1
+make configure
+./configure --prefix=/usr/local/git --with-iconv=/usr/local/libiconv
+make all doc
+make install install-doc install-html
+echo "export PATH=$PATH:/usr/local/git/bin" >> /etc/bashrc
+source /etc/bashrc
+
+
+--with-tlib=ncursesw 强制VIM链接到libncursew
+结果发现还是找不到ncurses
+
+解决办法：
+
+CentOS
+
+yum install -y ncurses-devel.x86_64
+
+
+Ubuntu
+
+sudo apt install -y libncurses5-dev
+
+0
+
+
+在系统安装过程中，总是到twisted时报错，因为是源码安装的，所以系统要进行编译，但是找不到python.h文件！！！
+
+报错如下
+
+creating build/temp.linux-x86_64-2.7/src
+creating build/temp.linux-x86_64-2.7/src/twisted
+creating build/temp.linux-x86_64-2.7/src/twisted/test
+x86_64-linux-gnu-gcc -pthread -DNDEBUG -g -fwrapv -O2 -Wall -Wstrict-prototypes -fno-strict-aliasing -Wdate-time -D_FORTIFY_SOURCE=2 -g -fstack-protector-strong -Wformat -Werror=format-security -fPIC -I/usr/include/python3.6m -c src/twisted/test/raiser.c -o build/temp.linux-x86_64-2.7/src/twisted/test/raiser.o
+src/twisted/test/raiser.c:4:20: fatal error: Python.h: 没有那个文件或目录
+compilation terminated.
+error: command 'x86_64-linux-gnu-gcc' failed with exit status 1
+
+sudo apt install python-dev
+

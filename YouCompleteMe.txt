@@ -1,0 +1,42 @@
+git clone https://github.com/Valloric/YouCompleteMe.git ~/.vim/bundle/YouCompleteMe
+git submodule update --init --recursive
+
+
+ ../llvm/configure --enable-optimized --enable-targets=host-only
+make -j4
+make install
+
+
+
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/mpc-0.8.1/lib/:/opt/gmp-4.3.2/lib/:/opt/mpfr-2.4.2/lib/
+LD_LIBRARY_PATH=/opt/mpc-0.8.1/lib/:/opt/gmp-4.3.2/lib/:/opt/mpfr-2.4.2/lib/
+
+
+
+cmake
+version `GLIBCXX_3.4.15' not found
+strings /usr/lib64/libstdc++.so.6 | grep GLIBCXX
+
+./bootstrap
+gmake
+make install
+
+
+./install.py --clang-completer
+
+
+$ cmake -G "Unix Makefiles" -DUSE_SYSTEM_BOOST=ON -DEXTERNAL_LIBCLANG_PATH=/usr/lib/x86_64-linux-gnu/libclang-3.9.so .~/.vim/bundle/YouCompleteMe/third_party/ycmd/cpp
+
+
+
+cmake -G "Unix Makefiles" -DPYTHON_INCLUDE_DIR=/usr/local/lib/python3.6 -DPYTHON_LIBRARY=/usr/local/lib/libpython3.6m.so -DUSE_SYSTEM_BOOST=ON -DEXTERNAL_LIBCLANG_PATH=/usr/local/lib/libclang.so DBOOST_INCLUDEDIR=/root/.vim/bundle/YouCompleteMe/third_party/ycmd/cpp/BoostParts/boost  ~/.vim/bundle/YouCompleteMe/third_party/ycmd/cpp
+
+
+cmake -G "Unix Makefiles" -DPYTHON_INCLUDE_DIR=/usr/local/lib/python3.6 -DPYTHON_LIBRARY=/usr/local/lib/libpython3.6m.so -DUSE_SYSTEM_BOOST=ON -DEXTERNAL_LIBCLANG_PATH=/usr/local/lib/libclang.so -DBOOST_INCLUDEDIR=/root/.vim/bundle/YouCompleteMe/third_party/ycmd/cpp/BoostParts/libs  -DBOOST_LIBRARYDIR=/root/.vim/bundle/YouCompleteMe/third_party/ycmd/clang_includes/include ~/.vim/bundle/YouCompleteMe/third_party/ycmd/cpp
+
+cmake -G "Unix Makefiles" -DUSE_SYSTEM_BOOST=ON  -DPYTHON_INCLUDE_DIR=/usr/local/lib/python3.6 -DPYTHON_LIBRARY=/usr/local/lib/libpython3.6m.so -DEXTERNAL_LIBCLANG_PATH=/usr/local/lib/libclang.so  ~/.vim/bundle/YouCompleteMe/third_party/ycmd/cpp/
+
+cmake -G "Unix Makefiles" -DPYTHON_INCLUDE_DIR=/usr/local/lib/python3.6 -DPYTHON_LIBRARY=/usr/local/lib/libpython3.6m.so -DUSE_SYSTEM_BOOST=ON -DEXTERNAL_LIBCLANG_PATH=/usr/local/lib/libclang.so - -DBOOST_LIBRARYDIR=/root/.vim/bundle/YouCompleteMe/third_party/ycmd/cpp/BoostParts/libs ~/.vim/bundle/YouCompleteMe/third_party/ycmd/cpp
+
+
+cmake --build . --target ycm_core --config Release
