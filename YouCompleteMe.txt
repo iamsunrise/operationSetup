@@ -39,4 +39,5 @@ cmake -G "Unix Makefiles" -DUSE_SYSTEM_BOOST=ON  -DPYTHON_INCLUDE_DIR=/usr/local
 cmake -G "Unix Makefiles" -DPYTHON_INCLUDE_DIR=/usr/local/lib/python3.6 -DPYTHON_LIBRARY=/usr/local/lib/libpython3.6m.so -DUSE_SYSTEM_BOOST=ON -DEXTERNAL_LIBCLANG_PATH=/usr/local/lib/libclang.so - -DBOOST_LIBRARYDIR=/root/.vim/bundle/YouCompleteMe/third_party/ycmd/cpp/BoostParts/libs ~/.vim/bundle/YouCompleteMe/third_party/ycmd/cpp
 
 
+cmake -G "Unix Makefiles" -DUSE_SYSTEM_BOOST=ON -DPATH_TO_LLVM_ROOT=~/downloads/clang+llvm/ ~/.vim/bundle/YouCompleteMe/third_party/ycmd/cpp
 cmake --build . --target ycm_core --config Release
