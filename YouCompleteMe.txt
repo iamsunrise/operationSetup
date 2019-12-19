@@ -36,8 +36,10 @@ cmake -G "Unix Makefiles" -DPYTHON_INCLUDE_DIR=/usr/local/lib/python3.6 -DPYTHON
 
 cmake -G "Unix Makefiles" -DUSE_SYSTEM_BOOST=ON  -DPYTHON_INCLUDE_DIR=/usr/local/lib/python3.6 -DPYTHON_LIBRARY=/usr/local/lib/libpython3.6m.so -DEXTERNAL_LIBCLANG_PATH=/usr/local/lib/libclang.so  ~/.vim/bundle/YouCompleteMe/third_party/ycmd/cpp/
 
-cmake -G "Unix Makefiles" -DPYTHON_INCLUDE_DIR=/usr/local/lib/python3.6 -DPYTHON_LIBRARY=/usr/local/lib/libpython3.6m.so -DUSE_SYSTEM_BOOST=ON -DEXTERNAL_LIBCLANG_PATH=/usr/local/lib/libclang.so - -DBOOST_LIBRARYDIR=/root/.vim/bundle/YouCompleteMe/third_party/ycmd/cpp/BoostParts/libs ~/.vim/bundle/YouCompleteMe/third_party/ycmd/cpp
+cmake -G "Unix Makefiles" -DPYTHON_INCLUDE_DIR=/usr/local/lib/python3.6 -DEXTERNAL_LIBCLANG_PATH=/usr/lib/x86_64-linux-gnu/libclang-3.9.so -DPYTHON_LIBRARY=/usr/local/lib/libpython3.6m.so -DUSE_SYSTEM_BOOST=ON -DEXTERNAL_LIBCLANG_PATH=/usr/local/lib/libclang.so - -DBOOST_LIBRARYDIR=/root/.vim/bundle/YouCompleteMe/third_party/ycmd/cpp/BoostParts/libs ~/.vim/bundle/YouCompleteMe/third_party/ycmd/cpp
 
 
 cmake -G "Unix Makefiles" -DUSE_SYSTEM_BOOST=ON -DPATH_TO_LLVM_ROOT=~/downloads/clang+llvm/ ~/.vim/bundle/YouCompleteMe/third_party/ycmd/cpp
+sudo cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX=/usr/local/llvm -DUSE_SYSTEM_BOOST=ON -DCMAKE_BUILD_TYPE=Release -DPATH_TO_LLVM_ROOT=/home/ubuntu/tools/llvm6.0 -DPYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libpython3.5m.so -DPYTHON_INCLUDE_DIR=/usr/local/lib/python3.5 -DUSE_SYSTEM_LIBCLANG=ON . ~/.vim/bundle/YouCompleteMe/third_party/ycmd/cpp
+
 cmake --build . --target ycm_core --config Release
