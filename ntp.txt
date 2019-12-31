@@ -19,3 +19,6 @@ ntpdate -u ntp.api.bz
 hwclock --show
 hwclock -w
 
+
+cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+hwclock -w
