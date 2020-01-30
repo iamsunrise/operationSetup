@@ -8,7 +8,7 @@ gettext
 ../gcc-4.9.0/configure --prefix=/usr/local/gcc  --enable-bootstrap  --enable-checking=release --enable-languages=c,c++ --disable-multilib
 
 
-export arch=arm
+export ARCH=arm
 export CROSS_COMPILE=arm-none-eabi-
 make vexpress_defconfig
 
