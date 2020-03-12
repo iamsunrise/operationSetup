@@ -6,3 +6,99 @@ gettext
 
 
 ../gcc-4.9.0/configure --prefix=/usr/local/gcc  --enable-bootstrap  --enable-checking=release --enable-languages=c,c++ --disable-multilib
+
+
+export arch=arm
+export CROSS_COMPILE=arm-none-eabi-
+make vexpress_defconfig
+
+
+ make menuconfig
+
+进入menuconfig之后，配置成静态编译
+
+
+Busybox Settings  ---->
+	Build Options     ---->
+			
+[*] Build BusyBox as a static binary  (no shared libs)
+1
+
+
+# make && make install
+在根目录下回有一个_install目录该目录存放了编译好的文件系统需要的一些命令合计
+将_install 目录复制到linux-4.0 目录下。进入_install 目录，先创建etc、dev等目录
+# mkdir etc
+# mkdir dev
+# mkdir mnt
+mkdir -p etc/init.d/
+
+_install /etc/init.d/目录下新建一个rcS文件，并写入如下内容
+
+mkdir -p /sys
+mkdir -p /tmp
+mkdir -p /proc
+mkdir -p /mnt
+/bin/mount -a
+mkdir -p /dev/pts
+mount -t devpts devpts /dev/pts
+echo /sbin/mdev > /proc/sys/kernel/hotplug
+mdev -s
+修改_install/etc/init.d/rcS 文件需要可执行权限，可以使用chmod命令来实现，比如chmod +x_install/etc/init.d/rcS。
+在_install /etc 目录中新建一个fstab文件
+proc /proc proc defaults 0 0
+tmpfs /tmp tmpfs defaults 0 0
+sysfs /sys sysfs defaults 0 0
+tmpfs /dev tmpfs defaults 0 0
+debugfs /sys/kernel/debug debugfs defaults 0 0
+
+在_install /etc 目录中新建一个inittab文件，并写入如下内容
+::sysinit:/etc/init.d/rcS
+::respawn:-/bin/sh
+::askfirst:-/bin/sh
+::ctrlaltdel:/bin/umount -a -r
+
+在_install/dev 目录中创建如下设备结点，这时需要root权限
+cd _install/dev/
+sudo mknod console c 5 1
+sudo mknod null c 1 3
+
+$ cd linux-4.0
+$ export ARCH=arm
+$ export CROSS_COMPILE=arm-linux-gnueabi-
+$ make vexpress_defconfig
+
+make menuconfig
+
+
+配置 initramfs,在 initramfs source file 中填入_install ，并把Default kernel command string清空
+接着
+General setup  --->  
+		  [*] Initial RAM filesystem and RAM disk (initramfs/initrd) support 
+        		 (_install) Initramfs source file(s)  
+
+Boot options --->
+	()Default kernel command string
+
+Kernel Features --->
+	Memory split(3G/1G user/kernel split)--->
+	[*] High Memory Suppor
+Boot options --->
+	()Default kernel command string
+
+Kernel Features --->
+	Memory split(3G/1G user/kernel split)--->
+	[*] High Memory Support
+
+
+cd _install_arm32/dev
+ make bzImage -j4 ARCH=arm CROSS_COMPILE=arm-linux-gnueabi-
+make dtbs
+
+
+运行QEMU虚拟机
+qemu-system-arm -M vexpress-a9 -smp 4 -m 200M -kernel arch/arm/boot/zImage -append "rdinit=/linuxrc console=ttyAMA0 loglevel=8" -dtb arch/arm/boot/dts/vexpress-v2p-ca9.dtb -nographic
+
+
+
+
