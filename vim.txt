@@ -40,6 +40,8 @@ sudo apt install -y libncurses5-dev
 
 0
 
+./configure --with-features=hugeinterp=yes --enable-python3interp=yes --with-python3-config-dir=/usr/local/lib/python3.5 --enable-perlinterp=yes --enable-luainterp=yes --enable-gui=gtk2 --enable-cscope --with-x --prefix=/usr/local/vim-8.1
+
 
 在系统安装过程中，总是到twisted时报错，因为是源码安装的，所以系统要进行编译，但是找不到python.h文件！！！
 

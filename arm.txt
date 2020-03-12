@@ -1,0 +1,32 @@
+export ARCH=arm64
+export CROSS_COMPILE=/home/ubuntu/tools/gcc-arm-none-eabi-5_4-2016q3/bin/arm-none-eabi-
+
+cd _install_arm32
+mkdir dev
+cd dev
+sudo mknod console c 5 1
+make vexpress_defconfig
+
+
+$ make bzImage -j4
+$ make dtbs
+qemu-system-arm -nographic -M vexpress-a9 -m 1024M -kernel arch/arm/boot/zImage -append "rdinit=/linuxrc console=ttyAMA0 loglever=8" -dtb arch/arm/boot/dts/vexpress-v2p-ca9.dtb -S -s
+
+调试
+arm-none-eabi-gdb -tui vmlinux
+
+sudo apt-get install qemu libncurses5-dev gcc-arm-linux-gnueabi build-essential gdb-arm-none-eabi gcc-aarch64-linux-gnu
+
+
+
+cat /proc/cpuinfo
+cat /proc/meminfo
+
+
+rm-none-eabi-gcc运行提示no such file or directory问题
+sudo apt-get install lib32ncurses5 lib32tinfo5 libc6-i386
+
+(gdb)target localhost:1234
+(gdb)b do_fork
+(gdb)c
+(gdb)s
