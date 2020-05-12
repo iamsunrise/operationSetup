@@ -13,7 +13,7 @@ ansible all -a 'date -s 2019-09-02'
 ansible all -a 'ntpdate -u ntp.api.bz'
 ansible all -a 'date '
 
-
+/usr/local/hadoop/bin/hdfs haadmin -transitionToActive --forcemanual nn3
 
 hadoop 
 ./hadoop-common-2.6.5.jar
@@ -30,6 +30,7 @@ ansible all -a "/usr/local/hadoop/sbin/start-dfs.sh"
 ansible all -a "/usr/local/hadoop/sbin/stop-dfs.sh stop"
 ansible all -a "jps"
 ansible zookeeper -m shell -a "/usr/local/zookeeper/bin/zkServer.sh start"
+ansible zookeeper -m shell -a "/usr/local/zookeeper/bin/zkServer.sh status"
 ansible all -a "/usr/local/kafka/bin/kafka-server-start.sh /usr/local/kafka/config/server.properties"
 ansible all -a "/usr/local/kafka/bin/kafka-server-stop.sh /usr/local/kafka/config/server.properties"
 ansible all -m shell -a "export JMX_PORT=9988 && /usr/local/kafka/bin/kafka-server-start.sh -daemon /usr/local/kafka/config/server.properties" 
