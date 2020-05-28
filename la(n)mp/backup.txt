@@ -1,0 +1,35 @@
+#!/bin/bash
+# MySQL全量备份脚本,建议在 slave从车上运行,并开启 log slave updates=7
+mkdir /backup
+cd /backup
+dateDIR='date+"%y-%m-%d"'
+mkdir -p $dateDIR/data
+path=/usr/local/mysql/data
+for i in 'mysql -uroot -p123456 -e "show databases" | grep -v  "Database"'
+do
+mysqldump -uroot --default-character --p123456 --default-character-set = utf8 \
+-q --lock-all-tables --flush-logs  -E -R --triggers -B $i|gzip > 
+/backup/$dateDIR/data/$(i)_$(dateDIR).sql.gz
+done
+binlog_rm='tail -n 1 $path/mysql-bin.index|sed 's/.\///''
+mysql -uroot -p123456 -e "purge binary logs to '$binlog_rm'"
+这个全量备份脚本,会在导出的时候锁住全局表,并刷新产生一个新的 binlog,期间会有写操作等待,直到导出结束后才会写入新产生的
+binlog里,然后旧的 binlog会被删除掉。一般该备份放在凌晨1:00操作较合适
+MySQL增量备份脚本如下
+#!/bin/bash
+# MySQL增量备份脚本,建议在 slaveM从库上运行,并开启 log slave updates=7
+cd /backup      
+dateDIR = 'date +"%y-%m-%d"                                   
+mkdir -p $dateDIR/data                                       
+path=/usr/local/mysql/data                                  
+mysqladmin -uroot -p123456 flush-logs                         
+binlog_cp= 'head -n -1 $path/mysql-bin.index|sed 's/.\\\''       
+for i in $binlog_cp                                         
+do                                                          
+mysql -uroot -p123456 -e "\! cp -p $path/Si/backup/$dateDIR/data/";
+done                                                        
+binlog rm=tail-n 1 Spath/mysql-bin.index sed 's/.\///""       
+mysql -uroot -p123456 -e "purge binary logs to '$binlog_rm'"   
+
+在执行全量备份脚本以后,就可以执行这个增量备份脚本了,首先会刷新产生一个新的 binlog,然后把之前有变化的 binlog复制到备份目
+录下,复制完以后就会把之前的旧 binlog删除掉,期间若有写操作,也会写入到新的 binlog里
