@@ -11,7 +11,7 @@ make install
 
 
 /usr/bin/perl /usr/share/perl5/ExtUtils/xsubpp -prototypes -typemap /usr/share/perl5/ExtUtils/typemap if_perl.xs >> auto/if_perl.c
-
+yum install perl-ExtUtils-Embed
 
 wget https://github.com/git/git/archive/v2.2.1.tar.gz
 tar zxvf v2.2.1.tar.gz
@@ -24,10 +24,10 @@ echo "export PATH=$PATH:/usr/local/git/bin" >> /etc/bashrc
 source /etc/bashrc
 
 
---with-tlib=ncursesw Ç¿ÖÆVIMÁ´½Óµ½libncursew
-½á¹û·¢ÏÖ»¹ÊÇÕÒ²»µ½ncurses
+--with-tlib=ncursesw å¼ºåˆ¶VIMé“¾æ¥åˆ°libncursew
+ç»“æœå‘ç°è¿˜æ˜¯æ‰¾ä¸åˆ°ncurses
 
-½â¾ö°ì·¨£º
+è§£å†³åŠæ³•ï¼š
 
 CentOS
 
@@ -43,15 +43,15 @@ sudo apt install -y libncurses5-dev
 ./configure --with-features=hugeinterp=yes --enable-python3interp=yes --with-python3-config-dir=/usr/local/lib/python3.5 --enable-perlinterp=yes --enable-luainterp=yes --enable-gui=gtk2 --enable-cscope --with-x --prefix=/usr/local/vim-8.1
 
 
-ÔÚÏµÍ³°²×°¹ı³ÌÖĞ£¬×ÜÊÇµ½twistedÊ±±¨´í£¬ÒòÎªÊÇÔ´Âë°²×°µÄ£¬ËùÒÔÏµÍ³Òª½øĞĞ±àÒë£¬µ«ÊÇÕÒ²»µ½python.hÎÄ¼ş£¡£¡£¡
+åœ¨ç³»ç»Ÿå®‰è£…è¿‡ç¨‹ä¸­ï¼Œæ€»æ˜¯åˆ°twistedæ—¶æŠ¥é”™ï¼Œå› ä¸ºæ˜¯æºç å®‰è£…çš„ï¼Œæ‰€ä»¥ç³»ç»Ÿè¦è¿›è¡Œç¼–è¯‘ï¼Œä½†æ˜¯æ‰¾ä¸åˆ°python.hæ–‡ä»¶ï¼ï¼ï¼
 
-±¨´íÈçÏÂ
+æŠ¥é”™å¦‚ä¸‹
 
 creating build/temp.linux-x86_64-2.7/src
 creating build/temp.linux-x86_64-2.7/src/twisted
 creating build/temp.linux-x86_64-2.7/src/twisted/test
 x86_64-linux-gnu-gcc -pthread -DNDEBUG -g -fwrapv -O2 -Wall -Wstrict-prototypes -fno-strict-aliasing -Wdate-time -D_FORTIFY_SOURCE=2 -g -fstack-protector-strong -Wformat -Werror=format-security -fPIC -I/usr/include/python3.6m -c src/twisted/test/raiser.c -o build/temp.linux-x86_64-2.7/src/twisted/test/raiser.o
-src/twisted/test/raiser.c:4:20: fatal error: Python.h: Ã»ÓĞÄÇ¸öÎÄ¼ş»òÄ¿Â¼
+src/twisted/test/raiser.c:4:20: fatal error: Python.h: æ²¡æœ‰é‚£ä¸ªæ–‡ä»¶æˆ–ç›®å½•
 compilation terminated.
 error: command 'x86_64-linux-gnu-gcc' failed with exit status 1
 
