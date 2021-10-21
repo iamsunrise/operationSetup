@@ -45,3 +45,8 @@ server {
 以上修改完成后，重启下，就可以访问8000端口的gitlab了。
 gitlab-ctl restart
 注意，不可以运行 gitlab-ctl reconfigure
+
+
+
+
+root i**********d
