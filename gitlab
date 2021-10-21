@@ -1,0 +1,47 @@
+修改gitlab默认端口
+gitlab默认需要使用80 8080 等端口
+
+步骤如下：
+
+修改 gitlab.yml
+
+进入目录： /var/opt/gitlab/gitlab-rails/etc
+
+将gitlab.yml 中的host和port修改成自己需要的
+
+  ## GitLab settings
+  gitlab:
+    ## Web server settings (note: host is the FQDN, do not include http://)
+    #host: gitlab.example.com
+    #port: 80
+    host: IP地址或者域名
+    port: 设定端口号1，如8000
+    https: false
+1
+2
+3
+4
+5
+6
+7
+8
+这里的端口号1 与nginx（gitlab自带的nginx，见下面2）监听的端口号 要相同，这是提供给外部浏览器访问的端口。
+
+修改 gitlab nginx配置
+找到 /var/opt/gitlab/nginx/conf/gitlab-http.conf
+它是gitlab内置的nginx的配置文件，里面可以影响到nginx真实监听端口号。要与上面的端口号1设置成一样。（位置略靠下）
+
+server {
+  listen *:8000; #这里的端口要和之前设置的一样
+  server_name 183.56.225.213;
+  server_tokens off; 
+}
+1
+2
+3
+4
+5
+重启gitlab
+以上修改完成后，重启下，就可以访问8000端口的gitlab了。
+gitlab-ctl restart
+注意，不可以运行 gitlab-ctl reconfigure
