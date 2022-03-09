@@ -200,11 +200,19 @@ mysql> select col1,col1+0 from set_t;
 +------+--------+
 4 rows in set (0.00 sec)
 
+performance_schema
 
+mysql -P3307 -p
+mysqldump -uxxx -pxxx –h ip_addr  -P port --databases B mysql --master-data=2 --single-transaction --default-character-set=xxx > /tmp/bak/B_dump.sql 2>/u01/bak/B_dump.log &
+/database/mysql/bin/mysql -uroot -pnewhand -h127.0.0.1 <  /tmp/bak/nova_dump.sql
 
+mysqladmin -pnewhand -P3306 shutdown
 
+mysqldump  -pnewhand  -P 3307 --databases performance_schema --master-data=2 --single-transaction --skip-lock-tables > /tmp/bak/B_dump.sql 2>/tmp/bak/B_dump.log &
+查看/tmp/bak/B_dump.sql的结尾是否有dump complete
+查看/tmp/bak/B_dump.log文件是否异常输出
 
-
-
+/database/mysql/bin/mysql -p
+mysql -p
 
 

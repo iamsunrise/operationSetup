@@ -1,0 +1,23 @@
+/usr/local/zookeeper/bin/zkServer.sh start
+export JMX_PORT=9988 && /usr/local/kafka/bin/kafka-server-start.sh -daemon /usr/local/kafka/config/server.properties
+nohup /usr/local/kafka-manager/bin/kafka-manager   -Dhttp.port=7456 >/usr/local/2>&1 &
+/database/mysql/bin/mysqld_safe &
+/usr/local/hadoop/sbin/hadoop-daemon.sh start namenode
+/usr/local/hadoop/sbin/hadoop-daemon.sh start datanode
+/usr/local/hive/bin/hiveserver2 
+/usr/local/hive/bin/beeline
+!connect jdbc:hive2://192.168.0.131:10000
+/usr/local/hadoop/bin/hdfs haadmin -transitionToActive --forcemanual nn3
+
+
+
+ansible zookeeper -m shell -a "/usr/local/zookeeper/bin/zkServer.sh start"
+ansible zookeeper -m shell -a "/usr/local/zookeeper/bin/zkServer.sh status"
+ansible all -m shell -a "export JMX_PORT=9988 && /usr/local/kafka/bin/kafka-server-start.sh -daemon /usr/local/kafka/config/server.properties" 
+nohup /usr/local/kafka-manager/bin/kafka-manager   -Dhttp.port=7456 >/usr/local/kafka/start.log 2>&1 &
+ansible all -a "/usr/local/hadoop/sbin/start-all.sh start"
+
+生产
+/usr/local/flume/bin/flume-ng agent --name a1 --conf-file /usr/local/flume/conf/file-flume-kafka.conf &
+消费
+/usr/local/flume/bin/flume-ng agent --name a1 --conf-file /usr/local/flume/conf/kafka-flume-hdfs.conf &

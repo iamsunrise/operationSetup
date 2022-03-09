@@ -9,4 +9,20 @@ ansible zookeeper -m shell -a "/usr/local/zookeeper/bin/zkServer.sh status"
 /usr/local/zookeeper/bin/zkCli.sh -timeout 5000 -server 127.0.0.1:12181
 /usr/local/zookeeper/bin/zkCli.sh -timeout 5000 -server 10.11.10.212:12181
 
+
+
+
+
+
+
+
+[main]: retry.RetryInvocationHandler (RetryInvocationHandler.java:invoke(140)) - Exception while invoking getFileInfo of class ClientNamenodeProtocolTranslatorPB over hadoop02/192.168.0.132:8020 after 7 fail over attempts. Trying to fail over after sleeping for 9746ms.
+java.net.ConnectException: Call From hadoop01/192.168.0.131 to hadoop02:8020 failed on connection exception: java.net.ConnectException: Connection refused; For more details see:  http://wiki.apache.org/hadoop/ConnectionRefused
+
+
+
+
+
+
+
  

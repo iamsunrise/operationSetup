@@ -93,6 +93,7 @@ Kernel Features --->
 
 cd _install_arm32/dev
  make bzImage -j4 ARCH=arm CROSS_COMPILE=arm-linux-gnueabi-
+ make bzImage -j4 ARCH=arm CROSS_COMPILE=arm-none-linux-gnueabi-					
 make dtbs
 
 

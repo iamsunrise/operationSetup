@@ -13,7 +13,8 @@ ansible all -a 'date -s 2019-09-02'
 ansible all -a 'ntpdate -u ntp.api.bz'
 ansible all -a 'date '
 Ë«standby
-bin/hdfs haadmin -transitionToActive --forcemanual nn3
+/usr/local/hadoop/sbin/hadoop-daemons.sh start namenode
+/usr/local/hadoop/bin/hdfs haadmin -transitionToActive --forcemanual nn3
 
 
 hadoop 
@@ -31,6 +32,7 @@ ansible all -a "/usr/local/hadoop/sbin/start-dfs.sh"
 ansible all -a "/usr/local/hadoop/sbin/stop-dfs.sh stop"
 ansible all -a "jps"
 ansible zookeeper -m shell -a "/usr/local/zookeeper/bin/zkServer.sh start"
+ansible zookeeper -m shell -a "/usr/local/zookeeper/bin/zkServer.sh status"
 ansible all -a "/usr/local/kafka/bin/kafka-server-start.sh /usr/local/kafka/config/server.properties"
 ansible all -a "/usr/local/kafka/bin/kafka-server-stop.sh /usr/local/kafka/config/server.properties"
 ansible all -m shell -a "export JMX_PORT=9988 && /usr/local/kafka/bin/kafka-server-start.sh -daemon /usr/local/kafka/config/server.properties" 
@@ -52,6 +54,7 @@ ansible all -m copy -a "src=/usr/local/hadoop/etc/hadoop/core-site.xml dest=/usr
 Æô¶¯hive£º
 /usr/local/hive/bin/hiveserver2 
 beeline> !connect jdbc:hive2://192.168.0.131:10000
+
 
 
 
@@ -170,3 +173,227 @@ split(base_analizer(line,'mid,uid,vc,vn,l,sr,os,ar,md,ba,sv,g,hw,t,nw,ln,la'),'\
 split(base_analizer(line,'mid,uid,vc,vn,l,sr,os,ar,md,ba,sv,g,hw,t,nw,ln,la'),'\t')[18]  as server_time
 from ods_event_log where dt='2020-01-27'  and base_analizer(line,'mid,uid,vc,vn,l,sr,os,ar,md,ba,sv,g,hw,t,nw,ln,la')<>'' 
 ) sdk_log lateral view flat_analizer(ops) tmp_k as event_name, event_json;
+
+
+
+
+insert overwrite table dwd_display_log
+PARTITION (dt='2020-01-27')
+select 
+mid_id,
+user_id,
+version_code,
+version_name,
+lang,
+source,
+os,
+area,
+model,
+brand,
+sdk_version,
+gmail,
+height_width,
+app_time,
+network,
+lng,
+lat,
+get_json_object(event_json,'$.kv.action') action,
+get_json_object(event_json,'$.kv.goodsid') goodsid,
+get_json_object(event_json,'$.kv.place') place,
+get_json_object(event_json,'$.kv.extend1') extend1,
+get_json_object(event_json,'$.kv.category') category,
+server_time
+from dwd_base_event_log 
+where dt='2020-01-27' and event_name='display';
+
+
+insert overwrite table dwd_newsdetail_log
+PARTITION (dt='2020-01-27')
+select 
+mid_id,
+user_id,
+version_code,
+version_name,
+lang,
+source,
+os,
+area,
+model,
+brand,
+sdk_version,
+gmail,
+height_width,
+app_time,
+network,
+lng,
+lat,
+get_json_object(event_json,'$.kv.entry') entry,
+get_json_object(event_json,'$.kv.action') action,
+get_json_object(event_json,'$.kv.goodsid') goodsid,
+get_json_object(event_json,'$.kv.showtype') showtype,
+get_json_object(event_json,'$.kv.news_staytime') news_staytime,
+get_json_object(event_json,'$.kv.loading_time') loading_time,
+get_json_object(event_json,'$.kv.type1') type1,
+get_json_object(event_json,'$.kv.category') category,
+server_time
+from dwd_base_event_log
+where dt='2020-01-27' and event_name='newsdetail';
+
+
+
+
+insert overwrite table dwd_loading_log
+PARTITION (dt='2020-01-27')
+select 
+mid_id,
+user_id,
+version_code,
+version_name,
+lang,
+source,
+os,
+area,
+model,
+brand,
+sdk_version,
+gmail,
+height_width,
+app_time,
+network,
+lng,
+lat,
+get_json_object(event_json,'$.kv.action') action,
+get_json_object(event_json,'$.kv.loading_time') loading_time,
+get_json_object(event_json,'$.kv.loading_way') loading_way,
+get_json_object(event_json,'$.kv.extend1') extend1,
+get_json_object(event_json,'$.kv.extend2') extend2,
+get_json_object(event_json,'$.kv.type') type,
+get_json_object(event_json,'$.kv.type1') type1,
+server_time
+from dwd_base_event_log
+where dt='2020-01-27' and event_name='loading';
+
+
+insert overwrite table dwd_ad_log
+PARTITION (dt='2020-01-27')
+select 
+mid_id,
+user_id,
+version_code,
+version_name,
+lang,
+source,
+os,
+area,
+model,
+brand,
+sdk_version,
+gmail,
+height_width,
+app_time,
+network,
+lng,
+lat,
+get_json_object(event_json,'$.kv.entry') entry,
+get_json_object(event_json,'$.kv.action') action,
+get_json_object(event_json,'$.kv.content') content,
+get_json_object(event_json,'$.kv.detail') detail,
+get_json_object(event_json,'$.kv.source') ad_source,
+get_json_object(event_json,'$.kv.behavior') behavior,
+get_json_object(event_json,'$.kv.newstype') newstype,
+get_json_object(event_json,'$.kv.show_style') show_style,
+server_time
+from dwd_base_event_log 
+where dt='2020-01-27' and event_name='ad';
+
+
+
+insert overwrite table dwd_notification_log
+PARTITION (dt='2020-01-27')
+select 
+mid_id,
+user_id,
+version_code,
+version_name,
+lang,
+source,
+os,
+area,
+model,
+brand,
+sdk_version,
+gmail,
+height_width,
+app_time,
+network,
+lng,
+lat,
+get_json_object(event_json,'$.kv.action') action,
+get_json_object(event_json,'$.kv.noti_type') noti_type,
+get_json_object(event_json,'$.kv.ap_time') ap_time,
+get_json_object(event_json,'$.kv.content') content,
+server_time
+from dwd_base_event_log
+where dt='2020-01-27' and event_name='notification';
+
+
+
+
+insert overwrite table dwd_active_foreground_log
+PARTITION (dt='2020-01-27')
+select 
+mid_id,
+user_id,
+version_code,
+version_name,
+lang,
+source,
+os,
+area,
+model,
+brand,
+sdk_version,
+gmail,
+height_width,
+app_time,
+network,
+lng,
+lat,
+get_json_object(event_json,'$.kv.push_id') push_id,
+get_json_object(event_json,'$.kv.access') access,
+server_time
+from dwd_base_event_log
+where dt='2020-01-27' and event_name='active_foreground';
+
+
+
+insert overwrite table dwd_active_background_log
+PARTITION (dt='2020-01-27')
+select 
+mid_id,
+user_id,
+version_code,
+version_name,
+lang,
+source,
+os,
+area,
+model,
+brand,
+sdk_version,
+gmail,
+height_width,
+app_time,
+network,
+lng,
+lat,
+get_json_object(event_json,'$.kv.active_source') active_source,
+server_time
+from dwd_base_event_log
+where dt='2020-01-27' and event_name='active_background';
+
+
+
+
+
+
