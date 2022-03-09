@@ -29,3 +29,11 @@ git commit -amend
 
 git rebase -i orgin/master
 git log --oneline --graph
+
+将已有项目加入远程项目地址
+git branch -f myadminset
+git checkout -b myadminset
+git remote add myadminset https://gitee.com/iamnewhand/adminset
+git push myadminset master
+
+

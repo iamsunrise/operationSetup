@@ -27,15 +27,23 @@ Starting SCSI target daemon:
 查看iscsi target共享存储的相关信息，使用tgt-admin --show命令
 
 启动
- /etc/init.d/iscsi restart
+/etc/init.d/iscsi restart
 start_udev
 
-[root@node1 ~]# tgt-admin --show
-Target 1: iqn.2016-09.org.huangming:viscsidisk
+[root@network0 ~]# tgt-admin --show
+Target 1: iqn.2019-03.com.chusi:datadisk
     System information:
         Driver: iscsi
         State: ready
     I_T nexus information:
+        I_T nexus: 1
+            Initiator: iqn.1994-05.com.redhat:99582f8aadcc
+            Connection: 0
+                IP Address: 192.168.2.118
+        I_T nexus: 2
+            Initiator: iqn.1994-05.com.redhat:c026cc9f7364
+            Connection: 0
+                IP Address: 192.168.2.121
     LUN information:
         LUN: 0
             Type: controller
@@ -53,30 +61,91 @@ Target 1: iqn.2016-09.org.huangming:viscsidisk
             Type: disk
             SCSI ID: IET     00010001
             SCSI SN: beaf11
-            Size: 839 MB, Block size: 512
+            Size: 1074 MB, Block size: 512
             Online: Yes
             Removable media: No
             Prevent removal: No
             Readonly: No
             Backing store type: rdwr
-            Backing store path: /dev/VolGroup00/iscsi00
+            Backing store path: /dev/vg_atom2/OCR
             Backing store flags: 
         LUN: 2
             Type: disk
             SCSI ID: IET     00010002
             SCSI SN: beaf12
-            Size: 1086 MB, Block size: 512
+            Size: 1074 MB, Block size: 512
             Online: Yes
             Removable media: No
             Prevent removal: No
             Readonly: No
             Backing store type: rdwr
-            Backing store path: /dev/sdb1
+            Backing store path: /dev/vg_atom2/OCR2
+            Backing store flags: 
+        LUN: 3
+            Type: disk
+            SCSI ID: IET     00010003
+            SCSI SN: beaf13
+            Size: 1074 MB, Block size: 512
+            Online: Yes
+            Removable media: No
+            Prevent removal: No
+            Readonly: No
+            Backing store type: rdwr
+            Backing store path: /dev/vg_atom2/VotingDisk
+            Backing store flags: 
+        LUN: 4
+            Type: disk
+            SCSI ID: IET     00010004
+            SCSI SN: beaf14
+            Size: 1074 MB, Block size: 512
+            Online: Yes
+            Removable media: No
+            Prevent removal: No
+            Readonly: No
+            Backing store type: rdwr
+            Backing store path: /dev/vg_atom2/VotingDisk2
+            Backing store flags: 
+        LUN: 5
+            Type: disk
+            SCSI ID: IET     00010005
+            SCSI SN: beaf15
+            Size: 42950 MB, Block size: 512
+            Online: Yes
+            Removable media: No
+            Prevent removal: No
+            Readonly: No
+            Backing store type: rdwr
+            Backing store path: /dev/vg_atom2/date
+            Backing store flags: 
+        LUN: 6
+            Type: disk
+            SCSI ID: IET     00010006
+            SCSI SN: beaf16
+            Size: 42950 MB, Block size: 512
+            Online: Yes
+            Removable media: No
+            Prevent removal: No
+            Readonly: No
+            Backing store type: rdwr
+            Backing store path: /dev/vg_atom2/date2
+            Backing store flags: 
+        LUN: 7
+            Type: disk
+            SCSI ID: IET     00010007
+            SCSI SN: beaf17
+            Size: 21475 MB, Block size: 512
+            Online: Yes
+            Removable media: No
+            Prevent removal: No
+            Readonly: No
+            Backing store type: rdwr
+            Backing store path: /dev/vg_atom2/flashRA
             Backing store flags: 
     Account information:
-        viscsiuser
+        iscsiuser
     ACL information:
-        10.0.0.12/24
+        192.168.2.0/24
+
 
 # 显示target数据
  iscsiadm -m discovery -t sendtargets -p 192.168.2.117:3260
@@ -114,7 +183,7 @@ IET     00010007  /dev/vg_atom2/flashRA
 
 start_udev
 fdisk -l
-vi /etc/udev/rules.d/99-oracle-asmdevices.rules
+
 
 
 KERNEL=="sd*", BUS=="scsi", PROGRAM=="/sbin/scsi_id --whitelisted --replace-whitespace --device=/dev/$name", RESULT=="1IET_00010001", NAME="asm-DATA1", OWNER="grid", GROUP="asmdba", MODE="0660"#每个磁盘的规则必须是在一行，不能有回车

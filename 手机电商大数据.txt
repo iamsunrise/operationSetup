@@ -12,10 +12,15 @@ ansible all -a 'java -classpath /home/work/project/appEcommerce/log-collector-1.
 ansible all -a 'date -s 2019-09-02'
 ansible all -a 'ntpdate -u ntp.api.bz'
 ansible all -a 'date '
+
 ˫standby
 /usr/local/hadoop/sbin/hadoop-daemons.sh start namenode
 /usr/local/hadoop/bin/hdfs haadmin -transitionToActive --forcemanual nn3
 
+=======
+
+/usr/local/hadoop/bin/hdfs haadmin -transitionToActive --forcemanual nn3
+>>>>>>> 769a54f891159c7b66647f020dc0742d657e5ed2
 
 hadoop 
 ./hadoop-common-2.6.5.jar

@@ -956,7 +956,15 @@ rac1£¨rac2  /u01/app/11.2.0/grid/bin/crsctl start cluster -all
 export ORACLE_SID=racdb1
 ºÏ≤È
 [grid@rac1~]$ crsctl check crs
+[grid@rac1 ~]$ crsctl check crs
+CRS-4638: Oracle High Availability Services is online
+CRS-4535: Cannot communicate with Cluster Ready Services
+CRS-4530: Communications failure contacting Cluster Synchronization Services daemon
+CRS-4533: Event Manager is online
 
+/u01/app/11.2.0/grid/bin/crsctl stop crs -f
+
+[root@rac1 ~]# /u01/app/11.2.0/grid/bin/crsctl stat res -t -init 
 
 crsd»’÷æ/u01/app/11.2.0/grid/log/rac1/crsd/crsd.log
 

@@ -1,82 +1,183 @@
-�鿴Linux��CPU��Ϣ��������
-# �ܺ��� = ����CPU���� X ÿ������CPU�ĺ��� 
-# ���߼�CPU�� = ����CPU���� X ÿ������CPU�ĺ��� X ���߳���
+查看Linux的CPU信息，核数等
+# 总核数 = 物理CPU个数 X 每颗物理CPU的核数 
+# 总逻辑CPU数 = 物理CPU个数 X 每颗物理CPU的核数 X 超线程数
 
-# �鿴����CPU����
+# 查看物理CPU个数
 cat /proc/cpuinfo| grep "physical id"| sort| uniq| wc -l
 
-# �鿴ÿ������CPU��core�ĸ���(������)
+# 查看每个物理CPU中core的个数(即核数)
 cat /proc/cpuinfo| grep "cpu cores"| uniq
 
-# �鿴�߼�CPU�ĸ���
+# 查看逻辑CPU的个数
 cat /proc/cpuinfo| grep "processor"| wc -l
 
-�鿴CPU��Ϣ���ͺţ�
+查看CPU信息（型号）
 cat /proc/cpuinfo | grep name | cut -f2 -d: | uniq -c
 
  
 
-�鿴�� ����Ϣ
+查看内 存信息
 # cat /proc/meminfo
 iostat -xdk 2 3
-rrqm/s��������ÿ���Ӻϲ��Ķ���������
-wrqm/s��������ÿ���Ӻϲ���д��������
-r/s��ÿ������ɵĶ���������
-w/s��ÿ������ɵ�д��������
-rsec/s��ÿ���Ӷ�ȡ����������
-wsec/s��ÿ����д�����������
-avgrq-sz��ƽ�����������Ĵ�С
-avgqu-sz��ƽ��������еĳ���
+rrqm/s：队列中每秒钟合并的读请求数量
+wrqm/s：队列中每秒钟合并的写请求数量
+r/s：每秒钟完成的读请求数量
+w/s：每秒钟完成的写请求数量
+rsec/s：每秒钟读取的扇区数量
+wsec/s：每秒钟写入的扇区数量
+avgrq-sz：平均请求扇区的大小
+avgqu-sz：平均请求队列的长度
 
-await��ƽ��ÿ������ĵȴ�ʱ��
-vctm��ƽ��ÿ������ķ���ʱ��
+await：平均每次请求的等待时间
+vctm：平均每次请求的服务时间
 
-util���豸��������
+util：设备的利用率
 
 route add default gw 192.168.0.1
 
-ע���������Դ������������Щ����������μ�������ġ�
+注：建议对照源代码来记忆这些参数都是如何计算出来的。
 
-������Щ�����������Ҫ���Ǻ��漸����������˵�ǣ�util��svctm��await��avgqu-sz��
+关于这些参数，相对重要的是后面几个，具体来说是：util，svctm，await，avgqu-sz：
 
-util���豸�������ʡ�������ӽ�100%��ͨ��˵���豸�������ڱ��ͣ��������ԣ�����ʱ�����ִ���100%�������������Ϊ��ȡ���ݵ�ʱ���Ƿ�ԭ�Ӳ�����
-
-
-svctm��ƽ��ÿ������ķ���ʱ�䡣��Դ��������Կ�����(r/s+w/s)*(svctm/1000)=util�������ӣ����util�ﵽ100%����ô��ʱsvctm=1000/(r/s+w/s)������IOPS��1000����ôsvctm�����1�������ң������ʱ����������ֵ��˵��ϵͳ�������⡣
+util是设备的利用率。如果它接近100%，通常说明设备能力趋于饱和（并不绝对）。有时候会出现大于100%的情况，这是因为读取数据的时候是非原子操作。
 
 
-await��ƽ��ÿ������ĵȴ�ʱ�䡣���ʱ������˶���ʱ��ͷ���ʱ�䣬Ҳ����˵��һ������£�await����svctm�����ǵĲ�ֵԽС����˵������ʱ��Խ�̣���֮��ֵԽ�󣬶���ʱ��Խ����˵��ϵͳ�������⡣
+svctm是平均每次请求的服务时间。从源代码里可以看出：(r/s+w/s)*(svctm/1000)=util。举例子：如果util达到100%，那么此时svctm=1000/(r/s+w/s)，假设IOPS是1000，那么svctm大概在1毫秒左右，如果长时间大于这个数值，说明系统出了问题。
 
 
-avgqu-sz��ƽ��������еĳ��ȡ��������ʣ����г���Խ��Խ�á�
-��
+await是平均每次请求的等待时间。这个时间包括了队列时间和服务时间，也就是说，一般情况下，await大于svctm，它们的差值越小，则说明队列时间越短，反之差值越大，队列时间越长，说明系统出了问题。
+
+
+avgqu-sz是平均请求队列的长度。毫无疑问，队列长度越短越好。
+—
 
 top 
-load avgǰ������ֵ�ֱ��Ӧϵͳ��ǰ1���ӡ�5���ӡ�15�����ڵ�ƽ��load��load���ڷ�ӳ��ǰϵͳ�ĸ������������16�˵�ϵͳ�����ÿ������cpu������Ϊ30%�����ڲ�����uninterruptible���̵�����£�ϵͳloadӦ��ά����4.8���ҡ���16��ϵͳ�����loadά����16���ң��ڲ�����uninterrptible���̵�����£���ζ��ϵͳCPU���������ڿ���״̬�������ʽӽ���100%�����iowait��vmstat��loadavg���Է�����ϵͳ��ǰ�����帺�أ������ָ��طֲ������
+load avg前面三个值分别对应系统当前1分钟、5分钟、15分钟内的平均load。load用于反映当前系统的负载情况，对于16核的系统，如果每个核上cpu利用率为30%，则在不存在uninterruptible进程的情况下，系统load应该维持在4.8左右。对16核系统，如果load维持在16左右，在不存在uninterrptible进程的情况下，意味着系统CPU几乎不存在空闲状态，利用率接近于100%。结合iowait、vmstat和loadavg可以分析出系统当前的整体负载，各部分负载分布情况。
 
-�鿴����cpu��Ϣ
+查看所有cpu信息
 mpstat -P ALL 2
 
-ÿ�����̵������ֽ���Ϣ
-pidstat -u 1 -p ���̱��
+每个进程的用量分解信息
+pidstat -u 1 -p 进程编号
 <<<<<<< HEAD
 
-cpuռ�ù���
+cpu占用过高
 top pid
 ps -fe|grep pid
 ps -mp pid -o THREAD,tid,time
-printf ��%x\n�� tid (תΪ16����)
+printf “%x\n” tid (转为16进制)
 jstack pid |grep tid -A 30
 
 
 
 zombie
-����һ��top   ��������鿴
-�������ps  �鿴��ʬ���̵ľ�����Ϣ
+步骤一：top   命令分析查看
+步骤二：ps  查看僵尸进程的具体信息
 
 ps -e -o stat,ppid,pid,cmd|egrep '^[Zz]'
-������������ɾ�� kill -9    ID
+步骤三：果断删除 kill -9    ID
 =======
 free -m
-pidstat -p ���̺� -r 2�����̶��ڴ�����ģ�
+pidstat -p 进程号 -r 2（进程对内存的消耗）
 >>>>>>> fc45d805a07046eaa83bb25b03e25ae3bf95d5d7
+
+
+平均负载 
+top uptime
+load average: 0.01, 0.16, 0.23 1 分钟、5 分钟、15 分钟
+超过70% 负载过重
+平均负载是指单位时间内，系统处于可运行状态和不可中断状态的平均进程数，也就是平均活跃进程数，它和 CPU 使用率并没有直接关系
+
+所谓可运行状态的进程，是指正在使用 CPU 或者正在等待 CPU 的进程，也就是我们常用 ps 命令看到的，处于 R 状态（Running 或 Runnable）的进程。不可中断状态的进程则是正处于内核态关键流程中的进程，并且这些流程是不可打断的，比如最常见的是等待硬件设备的 I/O 响应，也就是我们在 ps 命令中看到的 D 状态（Uninterruptible Sleep，也称为 Disk Sleep）的进程。
+
+
+当平均负载高于 CPU 数量 70% 的时候，你就应该分析排查负载高的问题了。一旦负载过高，就可能导致进程响应变慢，进而影响服务的正常功能。
+
+平均负载是指单位时间内，处于可运行状态和不可中断状态的进程数。所以，它不仅包括了正在使用 CPU 的进程，还包括等待 CPU 和等待 I/O 的进程。
+
+
+stress 是一个 Linux 系统压力测试工具，这里我们用作异常进程模拟平均负载升高的场景。而 sysstat 包含了常用的 Linux 性能工具，用来监控和分析系统的性能。我们的案例会用到这个包的两个命令 mpstat 和 pidstat。mpstat 是一个常用的多核 CPU 性能分析工具，用来实时查看每个 CPU 的性能指标，以及所有 CPU 的平均指标。pidstat 是一个常用的进程性能分析工具，用来实时查看进程的 CPU、内存、I/O 以及上下文切换等性能指标。
+
+CPU 密集型进程
+
+$ stress --cpu 1 --timeout 600
+
+
+# -d 参数表示高亮显示变化的区域
+$ watch -d uptime
+...,  load average: 1.00, 0.75, 0.39
+
+
+# -P ALL 表示监控所有CPU，后面数字5表示间隔5秒后输出一组数据
+$ mpstat -P ALL 5
+Linux 4.15.0 (ubuntu) 09/22/18 _x86_64_ (2 CPU)
+13:30:06     CPU    %usr   %nice    %sys %iowait    %irq   %soft  %steal  %guest  %gnice   %idle
+13:30:11     all   50.05    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00   49.95
+13:30:11       0    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00  100.00
+13:30:11       1  100.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+
+
+# 间隔5秒后输出一组数据
+$ pidstat -u 5 1
+13:37:07      UID       PID    %usr %system  %guest   %wait    %CPU   CPU  Command
+13:37:12        0      2962  100.00    0.00    0.00    0.00  100.00     1  stress
+
+I/O 密集型进程
+
+
+$ stress -i 1 --timeout 600
+
+
+$ watch -d uptime
+...,  load average: 1.06, 0.58, 0.37
+
+
+
+# 显示所有CPU的指标，并在间隔5秒输出一组数据
+$ mpstat -P ALL 5 1
+Linux 4.15.0 (ubuntu)     09/22/18     _x86_64_    (2 CPU)
+13:41:28     CPU    %usr   %nice    %sys %iowait    %irq   %soft  %steal  %guest  %gnice   %idle
+13:41:33     all    0.21    0.00   12.07   32.67    0.00    0.21    0.00    0.00    0.00   54.84
+13:41:33       0    0.43    0.00   23.87   67.53    0.00    0.43    0.00    0.00    0.00    7.74
+13:41:33       1    0.00    0.00    0.81    0.20    0.00    0.00    0.00    0.00    0.00   98.99
+
+
+
+# 间隔5秒后输出一组数据，-u表示CPU指标
+$ pidstat -u 5 1
+Linux 4.15.0 (ubuntu)     09/22/18     _x86_64_    (2 CPU)
+13:42:08      UID       PID    %usr %system  %guest   %wait    %CPU   CPU  Command
+13:42:13        0       104    0.00    3.39    0.00    0.00    3.39     1  kworker/1:1H
+13:42:13        0       109    0.00    0.40    0.00    0.00    0.40     0  kworker/0:1H
+13:42:13        0      2997    2.00   35.53    0.00    3.99   37.52     1  stress
+13:42:13        0      3057    0.00    0.40    0.00    0.00    0.40     0  pidstat
+
+
+大量进程的场景  
+
+
+$ stress -c 8 --timeout 600
+
+
+$ uptime
+...,  load average: 7.97, 5.93, 3.02
+
+
+
+# 间隔5秒后输出一组数据
+$ pidstat -u 5 1
+14:23:25      UID       PID    %usr %system  %guest   %wait    %CPU   CPU  Command
+14:23:30        0      3190   25.00    0.00    0.00   74.80   25.00     0  stress
+14:23:30        0      3191   25.00    0.00    0.00   75.20   25.00     0  stress
+14:23:30        0      3192   25.00    0.00    0.00   74.80   25.00     1  stress
+14:23:30        0      3193   25.00    0.00    0.00   75.00   25.00     1  stress
+14:23:30        0      3194   24.80    0.00    0.00   74.60   24.80     0  stress
+14:23:30        0      3195   24.80    0.00    0.00   75.00   24.80     0  stress
+14:23:30        0      3196   24.80    0.00    0.00   74.60   24.80     1  stress
+14:23:30        0      3197   24.80    0.00    0.00   74.80   24.80     1  stress
+14:23:30        0      3200    0.00    0.20    0.00    0.20    0.20     0  pidstat
+
+
+
+
+

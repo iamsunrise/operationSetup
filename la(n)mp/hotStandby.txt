@@ -1,0 +1,20 @@
+增量备份
+进行增量备份的前提是必须已经做过全量备份,步骤如下:
+1)先进行全量备份,命令如下:
+innobackupex --defaults-file=/etc/my.cnf /bak/fullbak/
+2)再进行增量备份,命令如下:
+innobackupex --defaults-file=etc/my.cnf --incremental /bak/incrementbak
+--incremental-basedir=/bak/fullbak/2013-06-12_16-46-36/
+备份成功后会提示:
+innobackupex: Backup created in directory /bak/incrementbak/2013-06-12 16-59-27
+innobackupex: MySQL binlog position: filename 'mysql-bin.000001' position 637, gtid executed
+c2 5abacf-5-d336-11e2-9edo-000c290a6b8f:1-2
+130612 16: 59:56 innobackupex: Connectio to database server closed
+130612 16:59: 56 innobackupex: completed OK!
+进入到备份目录,可以看到哪份是全量备份,哪份是增量备份,如下
+[root@ bak]# cd fullbak/2013-06-12_16-46-36/
+[root@M1 2013-06-12_16-46-36]#cat xtrabackup_checkpoints backup_type = full-backuped
+from_Isn=0
+to_Isn=3143306401
+last_Isn=3143306407
+compact=0
