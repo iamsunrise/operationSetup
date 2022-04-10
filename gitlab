@@ -33,6 +33,34 @@ gitlab默认需要使用80 8080 等端口
 
 server {
   listen *:8000; #这里的端口要和之前设置的一样
+  
+  
+  
+  
+  gitlab-ctl start 启动时候报错，runsv not running
+
+解决问题：
+
+1. 启动systemctl start gitlab-runsvdir.service
+
+   若启动时候没反应，则进行第二步，查看系统服务
+
+2. systemctl -t target
+
+    如果存在inactive dead的服务，则意味着这个服务出错了，进行第三步操作
+
+3. systemctl list-jobs
+
+    列出所有正在运行的任务，如果存在某个任务是running，其他任务waiting， 则是该任务堵塞了其他服务，停止该任务即可
+
+4. systemctl stop xxx.service
+
+     停止阻塞服务
+
+5.再次启动systemctl start gitlab-runsvdir.service，则正常启动
+
+6.gitlab-ctl start 启动gitlab成功
+
   server_name 183.56.225.213;
   server_tokens off; 
 }
